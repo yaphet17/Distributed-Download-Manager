@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+   <project name="Distributed-Download-Manager" default="run">
+   <property name="projectName" value="Distributed-Download-Manager"/>
+   <target name="run" depends="compile">
+		<java classname="Main.Main">
+			<classpath path="staging"/>
+		</java>
+		<java classname="Tracker.Server">
+			<classpath path="staging"/>
+		</java>
+   </target>
+   <target name="compile">
+		<javac includeantruntime="false" srcdir="./src" destdir="staging"/>
+   </target>
+</project>
