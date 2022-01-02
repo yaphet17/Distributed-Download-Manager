@@ -15,19 +15,30 @@ class Tracker {
     }
     synchronized public void addToList(String ip){
         clientList.add(ip);
+        System.out.println("Active server added");
     }
     synchronized  public void removeFromList(String ip){
         clientList.remove(ip);
+        System.out.println("Server removed");
     }
-    synchronized public void getIpList(PrintWriter writer){
-        if(clientList.size()==0){
-            writer.write("null");//notify requesting client there no is active server
-            return;
+    synchronized public void getIpList(DataOutputStream dos){
+        try{
+            if(clientList.size()==0){
+                dos.writeUTF("null");//notify requesting client there no is active server
+                System.out.println("no active serevr");
+                return;
+            }
+            System.out.println("sending active server ip list");
+            for(String ip:clientList){
+                dos.writeUTF(ip);
+                System.out.println("Server: "+ip);
+            }
+            dos.writeUTF("fin");
+            System.out.println("Ip list sent");
+        }catch(IOException e){
+            e.printStackTrace();
         }
-        for(String ip:clientList){
-            writer.write(ip);
-        }
-        writer.write("fin");
+
     }
 
 }
@@ -36,8 +47,8 @@ class ClientHandler implements Runnable{
 
     private final SSLSocket socket;
     private final Tracker tracker;
-    private BufferedReader reader;
-    private PrintWriter writer;
+    private DataInputStream dis;
+    private DataOutputStream dos;
     private final Thread t;
     private String message;
     private final String ip;
@@ -49,8 +60,8 @@ class ClientHandler implements Runnable{
         inet=socket.getInetAddress();
         ip=inet.getHostAddress();
         try {
-            reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            writer=new PrintWriter(socket.getOutputStream(),true);
+            dis=new DataInputStream(socket.getInputStream());
+            dos=new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -58,21 +69,24 @@ class ClientHandler implements Runnable{
         t.start();
     }
     public void run(){
+        System.out.println("client handler");
         try {
             //receive client request to give service
-            message=reader.readLine();
+            message=dis.readUTF();
+            System.out.println("request recieved");
             switch (message) {
                 case "server" -> tracker.addToList(ip);//if message=server register as active server
                 case "rm" -> tracker.removeFromList(ip);//if message=rm remove server from active servers list
-                case "iplist" -> tracker.getIpList(writer);//if message=iplist send active servers ip list to invoking machine
+                case "iplist" -> tracker.getIpList(dos);//if message=iplist send active servers ip list to invoking machine
             }
+            dos.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
-            writer.close();
+
             try {
-                reader.close();
-                socket.close();
+                dis.close();;
+                dos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -113,6 +127,7 @@ public class Server{
             Tracker tracker=new Tracker();
             while(true){
                 socket=(SSLSocket) server.accept();
+                System.out.println("client connected");
                 new ClientHandler(socket,tracker);
 
             }

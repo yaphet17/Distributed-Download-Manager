@@ -15,7 +15,6 @@ class ClientHandler implements Runnable{
     private final SSLSocket socket;
     private DataInputStream dis;
     private DataOutputStream dos;
-    private BufferedReader reader;
     private  long actualSize;
 
 
@@ -23,13 +22,10 @@ class ClientHandler implements Runnable{
 
     public ClientHandler(SSLSocket socket){
         this.socket=socket;
-        reader=null;
-        //writer=null;
         try {
             dis=new DataInputStream(socket.getInputStream());
             dos=new DataOutputStream(socket.getOutputStream());
-            reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            //writer=new PrintWriter(socket.getOutputStream(),true);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,16 +75,14 @@ class ClientHandler implements Runnable{
         boolean isSuccessful;
 
         try {
-            strUrl=reader.readLine();
+            strUrl=dis.readUTF();
+            start=Long.parseLong(dis.readUTF());
+            end=Long.parseLong(dis.readUTF());
+            System.out.println("Chunk boudary: "+start+"-"+end);
             fileName=getFileName(strUrl);
-            //index=reader.read();
-            //size=Long.parseLong(reader.readLine());
-            start=Long.parseLong(reader.readLine());
-            end=Long.parseLong(reader.readLine());
             actualSize=end-start;
             MAX_BUFFER_SIZE=8*1024;//8KB
             downloaded=start;
-            actualDownloaded=0;
             actualSize=end-start;//get actual file size to be downloaded
 
             //setting up connection
@@ -121,10 +115,10 @@ class ClientHandler implements Runnable{
                 actualDownloaded=downloaded-start;
                 showProgress(getSizeProgress(actualDownloaded),getPercentProgress(actualDownloaded));
             }
-            isSuccessful= downloaded == actualSize;
-            //writer.flush();
+
             //disconnect from remote server
-            connection.connect();
+            connection.disconnect();
+            isSuccessful= downloaded == actualSize;
             //if download completed succesfully stream the chunk back to client
             if(isSuccessful){
                 byte[] buffer=new byte[16*1024];
@@ -134,18 +128,17 @@ class ClientHandler implements Runnable{
                     buffer=new byte[16*10254];
                 }
                 dos.flush();
+                System.out.println("File completely sent!");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }finally{
-            //writer.close();
             try {
                 file.close();
                 tempFile.deleteOnExit();
                 dis.close();
                 dos.close();
-                reader.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -162,25 +155,17 @@ public class Server{
     private static DataOutputStream dos;
     private static final int SERVER_PORT=5001;
     private static final int TRACKER_PORT=5000;
-    private final String TRACKER_IP="";
+    private static final String TRACKER_IP="192.168.0.140";
 
 
     public Server(){
-        //creating a server
-        server=createServerSocket();
-        //registering to client server
-        socket=createSocket();
-        //attach writer to socket
-        try {
-            dos=new DataOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        
 
     }
 
 
-    private SSLServerSocket createServerSocket() {
+    private static SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
@@ -198,7 +183,7 @@ public class Server{
         System.out.println("waiting for client....");
         return serverSocket;
     }
-    private SSLSocket createSocket() {
+    private static SSLSocket createSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -231,12 +216,21 @@ public class Server{
         connection.disconnect();
         return true;
     }
-    public static  void main(String[] args){
+    public static  void main(String[] args) {
+        //creating a server
+        server=createServerSocket();
+        //registering to client server
+        socket=createSocket();
+        //attach inputstream to socket
+		try {
+            dos=new DataOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         //inform the tracker server is ready to accept download request
         if(!checkConnection()){
             try {
                 dos.writeUTF("noconnection");
-                return;
             } catch (IOException e) {
                 e.printStackTrace();
             }

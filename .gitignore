@@ -1,4 +1,6 @@
-.git
-.gitignore
 .idea
 Distributed-Download-Manager.iml
+src/Main/Client/*.class
+src/Main/Server/*.class
+src/Tracker/Server.class
+
