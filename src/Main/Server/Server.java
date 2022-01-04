@@ -16,7 +16,7 @@ class ClientHandler implements Runnable{
     private DataInputStream dis;
     private DataOutputStream dos;
     private  long actualSize;
-
+    private final Thread t;
 
 
 
@@ -29,6 +29,8 @@ class ClientHandler implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        t=new Thread(this);
+        t.start();
 
     }
     public static String getFileName(String url) {
@@ -75,13 +77,13 @@ class ClientHandler implements Runnable{
         boolean isSuccessful;
 
         try {
-            strUrl=dis.readUTF();
+            System.out.println("Url received "+(strUrl=dis.readUTF()));
             start=Long.parseLong(dis.readUTF());
             end=Long.parseLong(dis.readUTF());
-            System.out.println("Chunk boudary: "+start+"-"+end);
-            fileName=getFileName(strUrl);
-            actualSize=end-start;
-            MAX_BUFFER_SIZE=8*1024;//8KB
+            System.out.println("Chunk boundary recieved\nChunk boudary: "+start+"-"+end);
+             fileName=getFileName(strUrl);
+             actualSize=end-start;
+             /*MAX_BUFFER_SIZE=8*1024;//8KB
             downloaded=start;
             actualSize=end-start;//get actual file size to be downloaded
 
@@ -90,6 +92,7 @@ class ClientHandler implements Runnable{
             connection=(HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Range","bytes"+downloaded+"-");
             connection.connect();
+            System.out.println("connected to remote server");
             input=connection.getInputStream();//assign input stream to fetch data from remote server
             tempFile=new File(fileName);
             file=new RandomAccessFile(tempFile,"rw");
@@ -98,6 +101,7 @@ class ClientHandler implements Runnable{
             input.skip(start);
             //start downloading
             while (downloaded<=end) {
+                System.out.print("\rStart downloding");
                 byte[] buffer;
                 if (size - downloaded > MAX_BUFFER_SIZE) {
                     buffer = new byte[MAX_BUFFER_SIZE];
@@ -116,8 +120,6 @@ class ClientHandler implements Runnable{
                 showProgress(getSizeProgress(actualDownloaded),getPercentProgress(actualDownloaded));
             }
 
-            //disconnect from remote server
-            connection.disconnect();
             isSuccessful= downloaded == actualSize;
             //if download completed succesfully stream the chunk back to client
             if(isSuccessful){
@@ -130,13 +132,13 @@ class ClientHandler implements Runnable{
                 dos.flush();
                 System.out.println("File completely sent!");
             }
-
+        */
         } catch (IOException e) {
             e.printStackTrace();
         }finally{
             try {
-                file.close();
-                tempFile.deleteOnExit();
+               // file.close();
+                //tempFile.deleteOnExit();
                 dis.close();
                 dos.close();
             } catch (IOException e) {
@@ -155,7 +157,7 @@ public class Server{
     private static DataOutputStream dos;
     private static final int SERVER_PORT=5001;
     private static final int TRACKER_PORT=5000;
-    private static final String TRACKER_IP="192.168.0.140";
+    private static final String TRACKER_IP="192.168.137.49";
 
 
     public Server(){
@@ -180,7 +182,6 @@ public class Server{
             e1.printStackTrace();
 
         }
-        System.out.println("waiting for client....");
         return serverSocket;
     }
     private static SSLSocket createSocket() {
@@ -198,7 +199,6 @@ public class Server{
             e1.printStackTrace();
 
         }
-        System.out.println("waiting for client....");
         return socket;
     }
     private static boolean checkConnection(){
@@ -238,6 +238,7 @@ public class Server{
         }
         try {
             dos.writeUTF("server");
+            System.out.println("registered to tracker");
         } catch (IOException e) {
             System.out.println("Error to write to tracker");
             e.printStackTrace();

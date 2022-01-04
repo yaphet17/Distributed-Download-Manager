@@ -69,11 +69,10 @@ class ClientHandler implements Runnable{
         t.start();
     }
     public void run(){
-        System.out.println("client handler");
         try {
             //receive client request to give service
             message=dis.readUTF();
-            System.out.println("request recieved");
+            System.out.println("request recieved: "+message);
             switch (message) {
                 case "server" -> tracker.addToList(ip);//if message=server register as active server
                 case "rm" -> tracker.removeFromList(ip);//if message=rm remove server from active servers list
@@ -97,6 +96,7 @@ public class Server{
 
     private static SSLServerSocket server;
     private static SSLSocket socket;
+    private static InetAddress inet;
 
     private static final int PORT=5000;
 
@@ -116,7 +116,6 @@ public class Server{
             e1.printStackTrace();
 
         }
-        System.out.println("waiting for client....");
         return serverSocket;
     }
     //Run server and handle client requests
@@ -127,7 +126,8 @@ public class Server{
             Tracker tracker=new Tracker();
             while(true){
                 socket=(SSLSocket) server.accept();
-                System.out.println("client connected");
+                inet=socket.getInetAddress();
+                System.out.println("client "+inet.getHostAddress()+" connected");
                 new ClientHandler(socket,tracker);
 
             }

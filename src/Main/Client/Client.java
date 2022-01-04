@@ -12,6 +12,7 @@ import java.util.Map;
 
 class ServerHandler implements Runnable{
     private final SSLSocket socket;
+    private final InetAddress inet;
     private final String ip;
     private final long start;
     private final long end;
@@ -19,10 +20,12 @@ class ServerHandler implements Runnable{
     private DataOutputStream dos;
     private final int index;
     private final long size;
+    private final Thread t;
 
     public ServerHandler(String ip,long start,long end,long size,int index){
         this.ip=ip;
         socket=createSocket(ip);
+        inet=socket.getInetAddress();
         this.start=start;
         this.end=end;
         dis=null;
@@ -35,6 +38,9 @@ class ServerHandler implements Runnable{
         }
         this.size=size;
         this.index=index;
+        t=new Thread(this);
+        t.start();
+
     }
     private SSLSocket createSocket(String ip) {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
@@ -63,32 +69,31 @@ class ServerHandler implements Runnable{
             //sending download information to servers
             System.out.println("sending file information to servers");
             dos.writeUTF(Client.strUrl);
+            System.out.println("Url sent");
             dos.writeUTF(String.valueOf(start));
             dos.writeUTF(String.valueOf(end));
+            System.out.println("Chunk boudary sent to: "+inet.getHostAddress());
             file=new RandomAccessFile(getFileName(Client.strUrl,index),"rw");
-            dos.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        //start receiving chunks from servers
-        System.out.println("recieving chunk from "+ip);
-        try{
+            //start receiving chunks from servers
+            /*System.out.println("recieving chunk from "+ip);
             while((b=dis.read(buffer))!=-1) {
                 file.write(buffer, 0, b);
                 buffer=new byte[8*1024];
             }
-            System.out.println("File completely received!");
+            System.out.println("File completely received!");*/
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
             try {
-                file.close();
+                dos.flush();
+                //file.close();
                 dis.close();
                 dos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            System.out.println("Socket closed");
         }
 
 
@@ -105,19 +110,19 @@ class Distributer{
     public void distribute(){
         int noServer=Client.tempIpList.size();
         long fileSize=Client.downloadSize;
-        long chunkSize=fileSize/noServer;
-        int remainder=(int)(fileSize-(noServer*chunkSize));
-        long start;
-        long end=chunkSize;
+        long chunkSize=fileSize/(noServer+1);
+        int remainder=(int)(fileSize-((noServer+1)*chunkSize));
+        long start=0;
+        long end=chunkSize+remainder;
         int index=2;
         //Client.download(start,end+remainder);
-        start=end+remainder;
-        end=start+chunkSize;
+        System.out.println("Chunk boundary for:self "+start+"-"+end);
         for(String ip:Client.tempIpList){
-            new ServerHandler(ip,start,end,fileSize,index);
-            serverChunkMap.put(ip,start+"-"+end);
             start=end;
             end+=chunkSize;
+            System.out.println("Chunk boundary for server: "+ip+" "+start+"-"+end);
+            new ServerHandler(ip,start,end,fileSize,index);
+            serverChunkMap.put(ip,start+"-"+end);
             index++;
         }
     }
@@ -130,7 +135,7 @@ public class Client {
     private static InetAddress inet;
     private static DataInputStream dis;
     private static DataOutputStream dos;
-    private static final String TRACKER_IP="192.168.0.140";
+    private static final String TRACKER_IP="192.168.137.49";
     private static final int TRACKER_PORT=5000;
     protected static final int SERVER_PORT=5001;
     protected static final HashSet<String> tempIpList=new HashSet<>();
@@ -139,7 +144,6 @@ public class Client {
     private static String message;
     protected static String strUrl="https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1280_10MG.mp4";
     protected static String fileName;
-    protected static long size;
     protected static long downloadSize;
 
 
@@ -171,29 +175,29 @@ public class Client {
         //writer.write("iplist");
         try{
             dos.writeUTF("iplist");
+            System.out.println("request sent: iplist");
         }catch(IOException e){
             e.printStackTrace();
         }
         System.out.println("request sent");
         //receiving active servers list
+        System.out.println("start recieving ip list");
         try {
+            message=dis.readUTF();
+            if(message.equals("null")){
+                System.out.println("no server available");
+                return false;
+            }
+            do{
 
-            while(!(message=dis.readUTF()).equals("fin")){
-                System.out.println("start recieving ip list");
-                if(!message.equals("null")){
-                    System.out.println("no server available");
-                    break;
-                }
                 tempIpList.add(message);
                 System.out.println(message);
-            }
-            System.out.println("active servers available");
-            return true;
-
+                System.out.println("active servers available");
+            }while(!(message=dis.readUTF()).equals("fin"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     private static String getSizeProgress(long downloaded){
@@ -225,21 +229,17 @@ public class Client {
         long downloaded=0;
 
         try {
-            connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestProperty("Range", "bytes"+downloaded+"-");
-            connection.connect();
-            size=connection.getContentLength();
             tempFile=new File(fileName);
             file=new RandomAccessFile(tempFile,"rw");
             input = connection.getInputStream();
             input.skip(downloaded);
-            while ( downloaded!=size) {
+            while ( downloaded!=downloadSize) {
                 byte[] buffer;
 
-                if (size - downloaded > MAX_BUFFER_SIZE) {
+                if (downloadSize - downloaded > MAX_BUFFER_SIZE) {
                     buffer = new byte[MAX_BUFFER_SIZE];
                 } else {
-                    int diff=(int)(size-downloaded);
+                    int diff=(int)(downloadSize-downloaded);
                     buffer = new byte[diff];
                 }
                 int read = input.read(buffer);
@@ -249,7 +249,7 @@ public class Client {
                 //write bytes to the file
                 file.write(buffer, 0, read);
                 downloaded += read;
-                showProgress(getSizeProgress(downloaded),getPercentProgress(downloaded,size));
+                showProgress(getSizeProgress(downloaded),getPercentProgress(downloaded,downloadSize));
 
             }
         } catch (Exception e) {
@@ -285,9 +285,6 @@ public class Client {
         long actualDownloaded;
 
         try {
-            connection=(HttpURLConnection)url.openConnection();
-            connection.setRequestProperty("Range", "bytes"+downloaded+"-");
-            connection.connect();
             actualSize=end-start;
             tempFile=new File(fileName);
             file=new RandomAccessFile(tempFile,"rw");
@@ -300,10 +297,10 @@ public class Client {
             while (downloaded<=end) {
                 byte[] buffer;
 
-                if (size - downloaded > MAX_BUFFER_SIZE) {
+                if (downloadSize - downloaded > MAX_BUFFER_SIZE) {
                     buffer = new byte[MAX_BUFFER_SIZE];
                 } else {
-                    int diff=(int)(size-downloaded);
+                    int diff=(int)(downloadSize-downloaded);
                     buffer = new byte[diff];
                 }
                 int read = input.read(buffer);
@@ -351,7 +348,9 @@ public class Client {
         try {
             url=new URL(strUrl);
             connection=(HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("Range", "bytes"+0+"-");
             downloadSize=connection.getContentLengthLong();
+            System.out.println("File size: "+downloadSize);
             fileName=url.getFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -359,11 +358,11 @@ public class Client {
 
         //check if there is active servers if not download by it self
         System.out.println("requesting active servers");
-        if (requestIPList()) {
+        if (!requestIPList()) {
             System.out.println("Downloading by it self");
             download(0,downloadSize);
         }else{
-            System.out.println("distributing");
+            System.out.println("distributing chunks");
             distributer.distribute();
         }
     }
