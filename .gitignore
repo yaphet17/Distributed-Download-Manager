@@ -1,7 +1,7 @@
 .idea
-build.xml
-Distributed-Download-Manager.iml
-src/Main/Client/*.class
-src/Main/Server/*.class
-src/Tracker/Server.class
-
+*.class
+Downloads
+client-temp-files
+server-temp-files
+config
+target
