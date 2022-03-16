@@ -74,9 +74,15 @@ class ClientHandler implements Runnable{
             message=dis.readUTF();
             System.out.println("request recieved: "+message);
             switch (message) {
-                case "server" -> tracker.addToList(ip);//if message=server register as active server
-                case "rm" -> tracker.removeFromList(ip);//if message=rm remove server from active servers list
-                case "iplist" -> tracker.getIpList(dos);//if message=iplist send active servers ip list to invoking machine
+                case "server":
+                    tracker.addToList(ip);//if message=server register as active server
+                    break;
+                case "rm" :
+                    tracker.removeFromList(ip);//if message=rm remove server from active servers list
+                    break;
+                case "iplist" :
+                    tracker.getIpList(dos);//if message=iplist send active servers ip list to invoking machine
+                    break;
             }
             dos.flush();
         } catch (IOException e) {
@@ -101,16 +107,17 @@ public class Server{
     private static final int PORT=5000;
 
 
-    private static SSLServerSocket createServerSocket(int port) {
+    private static SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
+        //"SSL_DH_anon_WITH_RC4_128_MD5"
         //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
         try {
             System.out.println("creating a server socket....");
-            serverSocket = (SSLServerSocket) serverFactory.createServerSocket(port);
-            System.out.println("server socket created");
+            serverSocket = (SSLServerSocket) serverFactory.createServerSocket(PORT);
             serverSocket.setEnabledCipherSuites(CIPHERS);
+            System.out.println("server socket created");
             serverSocket.setEnableSessionCreation(true);
         } catch (IOException e1) {
             e1.printStackTrace();
@@ -138,7 +145,7 @@ public class Server{
     }
     public static void main(String[] args){
         //creating server
-        server=createServerSocket(PORT);
+        server=createServerSocket();
         runServer();
     }
 

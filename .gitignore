@@ -1,6 +1,7 @@
 .idea
-build.xml
-Distributed-Download-Manager.iml
 *.class
-ClientStaging
-ServerStaging
+Downloads
+client-temp-files
+server-temp-files
+config
+target

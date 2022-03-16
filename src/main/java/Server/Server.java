@@ -1,4 +1,6 @@
-package Main.Server;
+package Server;
+
+import me.tongfei.progressbar.ProgressBar;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -7,9 +9,6 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.*;
 
-class Assembler{
-
-}
 class ClientHandler implements Runnable{
 
     private final SSLSocket socket;
@@ -33,30 +32,17 @@ class ClientHandler implements Runnable{
         t.start();
 
     }
-    public static String getFileName(String url) {
-        return url.substring(url.lastIndexOf("/")+1);
-    }
-
-    private String getSizeProgress(long downloaded){
-        return downloaded/1048576+"MB";
-    }
-    private int getPercentProgress(long downloaded){
-        return (int)((downloaded/actualSize)*100);
-    }
-    private void showProgress(String sizeProgress,int percentProgress){
-        for(int i=percentProgress;i<=100;i++){
-            System.out.print("\rDownloading|");
-            for(int j=0;j<=i;j++){
-                System.out.print("#");
-            }
-            for(int k=i;k<100;k++){
-                System.out.print(" ");
-            }
-            System.out.print("|"+i+"% "+sizeProgress+"MB");
-
+    public String getFileName(String url) {
+        if(url.contains("?")){
+            String temp=url.substring(url.lastIndexOf("/")+1);
+            return temp.substring(temp.lastIndexOf("?")+1);
         }
-    }
+        return url.substring(url.lastIndexOf("/")+1);
 
+    }
+    public long getPercentage(long i){
+        return (100-((actualSize-i)*100)/actualSize);
+    }
     public void run(){
 
         URL url;
@@ -71,11 +57,11 @@ class ClientHandler implements Runnable{
         long end;//byte position to end the download
         final int MAX_BUFFER_SIZE;
         long size;//size of the file to be downloaded
-        long actualDownloaded;
-        long downloaded;
-        int status=0;//download flag:zero by default means the downloaded didn't finished
-        boolean isSuccessful;
-
+        long actualDownloaded=0;
+        long downloaded=0;
+        int read;
+        boolean isSuccessful=false;
+        ProgressBar pb = null;
         try {
             System.out.println("Url received "+(strUrl=dis.readUTF()));
             start=Long.parseLong(dis.readUTF());
@@ -83,68 +69,107 @@ class ClientHandler implements Runnable{
             System.out.println("Chunk boundary recieved\nChunk boudary: "+start+"-"+end);
              fileName=getFileName(strUrl);
              actualSize=end-start;
-             /*MAX_BUFFER_SIZE=8*1024;//8KB
+             MAX_BUFFER_SIZE=8*1024;//8KB
             downloaded=start;
             actualSize=end-start;//get actual file size to be downloaded
-
             //setting up connection
             url=new URL(strUrl);
             connection=(HttpURLConnection) url.openConnection();
+
+
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             connection.setRequestProperty("Range","bytes"+downloaded+"-");
+            if(connection.getResponseCode()/100!=2) {
+                System.out.println("Remote server returned HTTP response code: "+connection.getResponseCode());
+                return;
+            }
             connection.connect();
             System.out.println("connected to remote server");
             input=connection.getInputStream();//assign input stream to fetch data from remote server
-            tempFile=new File(fileName);
+            System.out.println("Input stream attached");
+            tempFile=new File("../../../server-temp-files/"+fileName);
+            System.out.println("mark");
             file=new RandomAccessFile(tempFile,"rw");
             size=connection.getContentLength();
+            System.out.println("mark-2:"+start);
             //skipping downloaded bytes
-            input.skip(start);
+            System.out.println(input.skip(downloaded));
+
+            System.out.println("mark-3");
+            System.out.print("\rStart downloading");
+            byte[] buffer;
+            //command line progress bar to indicate download
+            pb=new ProgressBar("Downloading", actualSize);
             //start downloading
             while (downloaded<=end) {
-                System.out.print("\rStart downloding");
-                byte[] buffer;
-                if (size - downloaded > MAX_BUFFER_SIZE) {
+                if (end - downloaded > MAX_BUFFER_SIZE) {
                     buffer = new byte[MAX_BUFFER_SIZE];
                 } else {
-                    int diff=(int)(size-downloaded);
+                    int diff = (int) (end - downloaded);
                     buffer = new byte[diff];
                 }
-                int read = input.read(buffer);
+                read = input.read(buffer);
                 if (read == -1) {
                     break;
                 }
                 //write bytes to the file
                 file.write(buffer, 0, read);
                 downloaded += read;
-                actualDownloaded=downloaded-start;
-                showProgress(getSizeProgress(actualDownloaded),getPercentProgress(actualDownloaded));
+                actualDownloaded = downloaded - start;
+                //update progress bar
+                pb.stepBy(getPercentage(actualDownloaded));
+            }
+            System.out.println("downloaded completed downloaded="+downloaded+" actual="+actualSize+" file size"+file.length());
+            isSuccessful= actualDownloaded == actualSize;
+            //if download completed successfully stream the chunk back to client
+            if(isSuccessful){
+                //set progress to 100% and change the status if streaming is completed successfully
+                pb.stepTo(100);
+                pb.setExtraMessage("Completed");
+                //create new progressbar to indicate the progress of streaming files to client
+                ProgressBar pb2=new ProgressBar("Streaming",100);
+                System.out.println("file successfully downloaded");
+                BufferedInputStream tempBos=new BufferedInputStream(new FileInputStream(tempFile));
+                buffer=new byte[16*1024];
+                int r=0;
+                dos.write(1);
+                dos.flush();
+                while((r=tempBos.read(buffer))!=-1){
+                    System.out.println("sending...");
+                    dos.write(buffer,0,r);
+                    buffer=new byte[16*1024];
+                    pb.stepBy(getPercentage(buffer.length));
+                }
+                //set progress to 100% and change the status if streaming is completed successfully
+                pb2.stepTo(100);
+                pb2.setExtraMessage("Completed");
+                dos.flush();
+                tempBos.close();
+                System.out.println("File completely sent! r "+r);
+            }else{
+                System.out.println("download is not completed successfully");
+                dos.write(0);
+                dos.flush();
             }
 
-            isSuccessful= downloaded == actualSize;
-            //if download completed succesfully stream the chunk back to client
-            if(isSuccessful){
-                byte[] buffer=new byte[16*1024];
-                int r;
-                while((r=file.read(buffer))!=-1){
-                    dos.write(buffer,0,r);
-                    buffer=new byte[16*10254];
-                }
-                dos.flush();
-                System.out.println("File completely sent!");
-            }
-        */
         } catch (IOException e) {
+            try {
+                dos.write(0);
+                dos.flush();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         }finally{
             try {
-               // file.close();
-                //tempFile.deleteOnExit();
+                tempFile.deleteOnExit();
                 dis.close();
                 dos.close();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            System.out.println("session closed");
         }
 
     }
@@ -157,7 +182,7 @@ public class Server{
     private static DataOutputStream dos;
     private static final int SERVER_PORT=5001;
     private static final int TRACKER_PORT=5000;
-    private static final String TRACKER_IP="192.168.137.49";
+    private static final String TRACKER_IP="localhost";
 
 
     public Server(){
@@ -169,6 +194,7 @@ public class Server{
 
     private static SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
+        //"SSL_DH_anon_WITH_RC4_128_MD5"
         //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
@@ -186,6 +212,7 @@ public class Server{
     }
     private static SSLSocket createSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
+        //"SSL_DH_anon_WITH_RC4_128_MD5"
         //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         SSLSocket socket = null;
@@ -197,6 +224,7 @@ public class Server{
             socket.setEnableSessionCreation(true);
         } catch (IOException e1) {
             e1.printStackTrace();
+            System.out.println("can't connect to tracker:"+e1.getMessage());
 
         }
         return socket;
@@ -207,6 +235,7 @@ public class Server{
         try {
             url=new URL("https://www.google.com");
             connection=(HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             connection.connect();
         } catch (Exception e) {
             System.out.println("connection is not available");
@@ -219,7 +248,7 @@ public class Server{
     public static  void main(String[] args) {
         //creating a server
         server=createServerSocket();
-        //registering to client server
+        //registering to tracker server
         socket=createSocket();
         //attach inputstream to socket
 		try {
