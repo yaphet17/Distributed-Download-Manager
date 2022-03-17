@@ -1,10 +1,13 @@
+main.class
 Client\Assembler.class
 Client\ServerHandler.class
 Client\Distributer.class
 Tracker\ClientHandler.class
-Tracker\Server.class
 Server\Server.class
 Tracker\Tracker.class
 Client\Client.class
-Client\Downloader.class
 Server\ClientHandler.class
+demo\demo.class
+Tracker\Server.class
+Client\Downloader.class
+LogWritter\LogWritter.class

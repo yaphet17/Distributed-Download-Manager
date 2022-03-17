@@ -1,6 +1,9 @@
 package Server;
 
+import Client.Client;
+import LogWritter.LogWritter;
 import me.tongfei.progressbar.ProgressBar;
+import picocli.CommandLine;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -9,6 +12,8 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
 import java.net.*;
 
+import static picocli.CommandLine.*;
+
 class ClientHandler implements Runnable{
 
     private final SSLSocket socket;
@@ -16,6 +21,7 @@ class ClientHandler implements Runnable{
     private DataOutputStream dos;
     private  long actualSize;
     private final Thread t;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
 
 
@@ -44,7 +50,6 @@ class ClientHandler implements Runnable{
         return (100-((actualSize-i)*100)/actualSize);
     }
     public void run(){
-
         URL url;
         HttpURLConnection connection;
         InputStream input;//to fetch file from remote server
@@ -61,42 +66,42 @@ class ClientHandler implements Runnable{
         long downloaded=0;
         int read;
         boolean isSuccessful=false;
-        ProgressBar pb = null;
+       ProgressBar pb = null;
         try {
-            System.out.println("Url received "+(strUrl=dis.readUTF()));
+            strUrl=dis.readUTF();
             start=Long.parseLong(dis.readUTF());
             end=Long.parseLong(dis.readUTF());
-            System.out.println("Chunk boundary recieved\nChunk boudary: "+start+"-"+end);
-             fileName=getFileName(strUrl);
-             actualSize=end-start;
-             MAX_BUFFER_SIZE=8*1024;//8KB
+            logWritter.writeLog("file information received from client","info");
+            logWritter.writeLog("chunk boundary {"+start+"-"+end+"}","info");
+            fileName=getFileName(strUrl);
+            actualSize=end-start;
+            MAX_BUFFER_SIZE=8*1024;//8KB
             downloaded=start;
             actualSize=end-start;//get actual file size to be downloaded
             //setting up connection
             url=new URL(strUrl);
             connection=(HttpURLConnection) url.openConnection();
-
-
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             connection.setRequestProperty("Range","bytes"+downloaded+"-");
             if(connection.getResponseCode()/100!=2) {
-                System.out.println("Remote server returned HTTP response code: "+connection.getResponseCode());
+                logWritter.writeLog("remote server returned HTTP response code "+connection.getResponseCode(),"error");
                 return;
             }
             connection.connect();
-            System.out.println("connected to remote server");
+            logWritter.writeLog("connected to remote server","info");
             input=connection.getInputStream();//assign input stream to fetch data from remote server
-            System.out.println("Input stream attached");
-            tempFile=new File("../../../server-temp-files/"+fileName);
-            System.out.println("mark");
+            File targetFolder=new File("server-temp-files");
+            if(!targetFolder.exists()){
+                if(targetFolder.mkdir()){
+                    logWritter.writeLog("folder doesn't exist---folder "+targetFolder.getName()+" is created","warn");
+                }else{
+                    logWritter.writeLog("folder doesn't exist---failed to create "+targetFolder.getName(),"error");
+                }
+            }
+            tempFile=new File(targetFolder.getName()+"/"+fileName);
             file=new RandomAccessFile(tempFile,"rw");
             size=connection.getContentLength();
-            System.out.println("mark-2:"+start);
             //skipping downloaded bytes
-            System.out.println(input.skip(downloaded));
-
-            System.out.println("mark-3");
-            System.out.print("\rStart downloading");
             byte[] buffer;
             //command line progress bar to indicate download
             pb=new ProgressBar("Downloading", actualSize);
@@ -117,49 +122,50 @@ class ClientHandler implements Runnable{
                 downloaded += read;
                 actualDownloaded = downloaded - start;
                 //update progress bar
-                pb.stepBy(getPercentage(actualDownloaded));
+                pb.stepTo(actualDownloaded);
             }
-            System.out.println("downloaded completed downloaded="+downloaded+" actual="+actualSize+" file size"+file.length());
             isSuccessful= actualDownloaded == actualSize;
             //if download completed successfully stream the chunk back to client
             if(isSuccessful){
                 //set progress to 100% and change the status if streaming is completed successfully
-                pb.stepTo(100);
                 pb.setExtraMessage("Completed");
-                //create new progressbar to indicate the progress of streaming files to client
-                ProgressBar pb2=new ProgressBar("Streaming",100);
-                System.out.println("file successfully downloaded");
+                logWritter.writeLog("download successfully completed","info");
+                //create progressbar to indicate the progress of streaming files to client
+                ProgressBar pb2=new ProgressBar("Streaming",file.length());
                 BufferedInputStream tempBos=new BufferedInputStream(new FileInputStream(tempFile));
                 buffer=new byte[16*1024];
                 int r=0;
                 dos.write(1);
                 dos.flush();
+                long bytes=0;
                 while((r=tempBos.read(buffer))!=-1){
-                    System.out.println("sending...");
                     dos.write(buffer,0,r);
                     buffer=new byte[16*1024];
-                    pb.stepBy(getPercentage(buffer.length));
+                    bytes+=buffer.length;
+                    pb.stepTo(bytes);
                 }
                 //set progress to 100% and change the status if streaming is completed successfully
-                pb2.stepTo(100);
                 pb2.setExtraMessage("Completed");
                 dos.flush();
                 tempBos.close();
-                System.out.println("File completely sent! r "+r);
+                logWritter.writeLog("file successfully sent to client "+socket.getInetAddress().getHostAddress(),"info");
             }else{
-                System.out.println("download is not completed successfully");
+                logWritter.writeLog("failed to download file","error");
                 dos.write(0);
                 dos.flush();
             }
 
-        } catch (IOException e) {
+        } catch (ConnectException e) {
+            logWritter.writeLog("connection timeout while downloading---"+e.getMessage(),"error");
+         } catch (IOException e) {
             try {
                 dos.write(0);
                 dos.flush();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                logWritter.writeLog("failed to send error message to client "
+                        +socket.getInetAddress().getHostAddress()+"---"+ex.getMessage(),"error");
             }
-            e.printStackTrace();
+          logWritter.writeLog(e.getMessage(),"error");
         }finally{
             try {
                 tempFile.deleteOnExit();
@@ -167,15 +173,16 @@ class ClientHandler implements Runnable{
                 dos.close();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                logWritter.writeLog(e.getMessage(),"error");
             }
-            System.out.println("session closed");
+           logWritter.writeLog("session closed to client "+socket.getInetAddress().getHostAddress(),"info");
         }
 
     }
 
 }
-public class Server{
+@Command(name="server",description = "start download server", mixinStandardHelpOptions = true)
+public class Server implements Runnable{
 
     private static SSLServerSocket server;
     private static SSLSocket socket;
@@ -183,53 +190,40 @@ public class Server{
     private static final int SERVER_PORT=5001;
     private static final int TRACKER_PORT=5000;
     private static final String TRACKER_IP="localhost";
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
 
-    public Server(){
-
-        
-
-    }
 
 
-    private static SSLServerSocket createServerSocket() {
+    private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
-        //"SSL_DH_anon_WITH_RC4_128_MD5"
-        //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
         try {
-            System.out.println("creating a server socket....");
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(SERVER_PORT);
-            System.out.println("server socket created");
             serverSocket.setEnabledCipherSuites(CIPHERS);
             serverSocket.setEnableSessionCreation(true);
+            logWritter.writeLog("server start listening on port "+SERVER_PORT,"info");
         } catch (IOException e1) {
-            e1.printStackTrace();
-
+          logWritter.writeLog("failed to create server on port"+SERVER_PORT+"---"+e1.getMessage(),"error");
         }
         return serverSocket;
     }
-    private static SSLSocket createSocket() {
+    private  SSLSocket createSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
-        //"SSL_DH_anon_WITH_RC4_128_MD5"
-        //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         SSLSocket socket = null;
         try {
-            System.out.println("creating socket....");
             socket = (SSLSocket) socketFactory.createSocket(TRACKER_IP, TRACKER_PORT);
-            System.out.println("socket created");
             socket.setEnabledCipherSuites(CIPHERS);
             socket.setEnableSessionCreation(true);
+            logWritter.writeLog("client socket created with address "+TRACKER_IP+":"+TRACKER_IP,"info");
         } catch (IOException e1) {
-            e1.printStackTrace();
-            System.out.println("can't connect to tracker:"+e1.getMessage());
-
+            logWritter.writeLog("failed to connect with tracker---"+e1.getMessage(),"error");
         }
         return socket;
     }
-    private static boolean checkConnection(){
+    private boolean checkConnection(){
         URL url;
         HttpURLConnection connection;
         try {
@@ -238,14 +232,13 @@ public class Server{
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             connection.connect();
         } catch (Exception e) {
-            System.out.println("connection is not available");
+            logWritter.writeLog("connection is not available---"+e.getMessage(),"warn");
             return false;
         }
-        System.out.println("connection available");
         connection.disconnect();
         return true;
     }
-    public static  void main(String[] args) {
+    public void run() {
         //creating a server
         server=createServerSocket();
         //registering to tracker server
@@ -254,35 +247,32 @@ public class Server{
 		try {
             dos=new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            logWritter.writeLog("failed to attach stream to socket---"+e.getMessage(),"error");
         }
         //inform the tracker server is ready to accept download request
         if(!checkConnection()){
             try {
                 dos.writeUTF("noconnection");
             } catch (IOException e) {
-                e.printStackTrace();
+                logWritter.writeLog("failed to attach stream to socket---"+e.getMessage(),"error");
             }
             return;
         }
         try {
             dos.writeUTF("server");
-            System.out.println("registered to tracker");
         } catch (IOException e) {
-            System.out.println("Error to write to tracker");
-            e.printStackTrace();
+            logWritter.writeLog("failed to register to tracker---"+e.getMessage(),"error");
         }
         InetAddress inet=socket.getInetAddress();
-        //server start listening
-        System.out.println("Server start listening on port:"+SERVER_PORT);
+        //accepting client request
         SSLSocket socket;
         while(true){
             try {
                 socket=(SSLSocket)server.accept();
-                System.out.println("client "+inet.getHostAddress()+" connected");
+                logWritter.writeLog("client "+inet.getHostAddress()+" connected","info");
                 new ClientHandler(socket);
             } catch (IOException e) {
-                e.printStackTrace();
+                logWritter.writeLog("failed to accept client request---"+e.getMessage(),"error");
             }
 
         }

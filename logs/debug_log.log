@@ -1,0 +1,106 @@
+2022-03-17 12:08:27.291 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:08:27.304 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:08:27.465 [INFO] --- main: active servers available
+2022-03-17 12:08:28.684 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:08:28.692 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 12:16:34.941 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:16:34.941 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:16:35.093 [INFO] --- main: active servers available
+2022-03-17 12:16:38.212 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:16:38.219 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 12:38:34.056 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:38:34.068 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:38:34.222 [INFO] --- main: active servers available
+2022-03-17 12:38:36.150 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:38:36.160 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 12:40:22.495 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:40:22.505 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:40:22.631 [INFO] --- main: active servers available
+2022-03-17 12:40:22.932 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:40:22.954 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 12:42:16.134 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:42:16.143 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:42:16.287 [INFO] --- main: active servers available
+2022-03-17 12:42:16.599 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:42:16.609 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 12:47:36.862 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 12:47:36.874 [INFO] --- main: sending to tracker for active servers list
+2022-03-17 12:47:37.014 [INFO] --- main: active servers available
+2022-03-17 12:47:37.995 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 12:47:37.998 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 15:53:02.433 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 15:53:41.825 [INFO] --- main: server start listening on port 5001
+2022-03-17 15:53:41.841 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 15:54:00.060 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 15:54:00.060 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 15:54:00.107 [INFO] --- main: active servers available
+2022-03-17 15:54:05.356 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 15:54:05.356 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 15:54:05.356 [INFO] --- Thread-1: download started
+2022-03-17 15:54:05.356 [INFO] --- main: client socket created with address 127.0.0.1:5001
+2022-03-17 15:54:05.356 [INFO] --- main: client 127.0.0.1 connected
+2022-03-17 15:54:05.371 [INFO] --- Thread-1: file information received from client
+2022-03-17 15:54:05.371 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 15:54:07.793 [INFO] --- Thread-1: connected to remote server
+2022-03-17 16:00:17.372 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:00:46.327 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:00:51.484 [INFO] --- main: server start listening on port 5001
+2022-03-17 16:00:51.499 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:01:00.666 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:01:00.666 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 16:01:00.713 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 16:01:00.713 [INFO] --- main: active servers available
+2022-03-17 16:01:05.695 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 16:01:05.695 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 16:01:05.695 [INFO] --- Thread-1: download started
+2022-03-17 16:01:05.695 [INFO] --- main: client socket created with address 127.0.0.1:5001
+2022-03-17 16:01:05.695 [INFO] --- main: client 127.0.0.1 connected
+2022-03-17 16:01:05.710 [INFO] --- Thread-1: file information received from client
+2022-03-17 16:01:05.710 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 16:01:07.866 [INFO] --- Thread-1: connected to remote server
+2022-03-17 16:01:57.496 [INFO] --- Thread-1: failed to download file
+2022-03-17 16:01:57.496 [INFO] --- Thread-1: session closed to client 127.0.0.1
+2022-03-17 16:01:57.496 [WARN] --- Thread-2: download failed for server 127.0.0.1
+2022-03-17 16:01:57.496 [INFO] --- Thread-2: session closed for server 127.0.0.1
+2022-03-17 16:05:25.784 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:05:30.591 [INFO] --- main: server start listening on port 5001
+2022-03-17 16:05:30.607 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:05:43.807 [WARN] --- main: connection is not available---Remote host closed connection during handshake
+2022-03-17 16:05:57.777 [INFO] --- main: server start listening on port 5001
+2022-03-17 16:05:57.792 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:06:56.543 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:06:56.543 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 16:06:56.590 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 16:06:56.590 [INFO] --- main: active servers available
+2022-03-17 16:07:03.433 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 16:07:03.433 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 16:07:03.433 [INFO] --- Thread-1: download started
+2022-03-17 16:07:03.433 [INFO] --- main: client socket created with address 127.0.0.1:5001
+2022-03-17 16:07:03.433 [INFO] --- main: client 127.0.0.1 connected
+2022-03-17 16:07:03.448 [INFO] --- Thread-1: file information received from client
+2022-03-17 16:07:03.448 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 16:07:05.307 [INFO] --- Thread-1: connected to remote server
+2022-03-17 16:07:40.678 [WARN] --- Thread-2: download failed for server 127.0.0.1
+2022-03-17 16:07:40.678 [INFO] --- Thread-2: session closed for server 127.0.0.1
+2022-03-17 16:08:32.221 [INFO] --- main: failed to connect with tracker---Connection refused: connect
+2022-03-17 16:15:14.852 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:15:35.813 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:15:56.066 [INFO] --- main: failed to connect with tracker---Connection refused: connect
+2022-03-17 16:15:56.066 [WARN] --- main: can't connect the tracker continue standalone download
+2022-03-17 16:15:56.909 [INFO] --- Thread-1: download started
+2022-03-17 16:19:20.063 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:19:30.372 [INFO] --- main: server start listening on port 5001
+2022-03-17 16:19:30.388 [INFO] --- main: client socket created with address localhost:localhost
+2022-03-17 16:19:35.922 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:19:35.922 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 16:19:35.969 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 16:19:35.969 [INFO] --- main: active servers available
+2022-03-17 16:19:36.422 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 16:19:36.422 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-17 16:19:36.422 [INFO] --- Thread-1: download started
+2022-03-17 16:19:36.422 [WARN] --- Thread-1: folder doesn't exist---folder 20MB is created
+2022-03-17 16:19:36.422 [INFO] --- main: client socket created with address 127.0.0.1:5001
+2022-03-17 16:19:36.422 [INFO] --- main: client 127.0.0.1 connected
+2022-03-17 16:19:36.438 [INFO] --- Thread-1: file information received from client
+2022-03-17 16:19:36.438 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 16:19:37.140 [INFO] --- Thread-1: connected to remote server
