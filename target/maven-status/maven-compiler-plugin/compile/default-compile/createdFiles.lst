@@ -7,7 +7,6 @@ Server\Server.class
 Tracker\Tracker.class
 Client\Client.class
 Server\ClientHandler.class
-demo\demo.class
 Tracker\Server.class
 Client\Downloader.class
 LogWritter\LogWritter.class

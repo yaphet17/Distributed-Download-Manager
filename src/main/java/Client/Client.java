@@ -2,6 +2,7 @@ package Client;
 
 import LogWritter.LogWritter;
 import me.tongfei.progressbar.ProgressBar;
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 import javax.net.ssl.SSLSocket;
@@ -12,6 +13,8 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.*;
+
+import static picocli.CommandLine.*;
 
 class Downloader implements Runnable{
 
@@ -453,18 +456,25 @@ public class Client implements Runnable{
     private static InetAddress inet;
     private static DataInputStream dis;
     private static DataOutputStream dos;
-    private static final String TRACKER_IP="localhost";
-    private static final int TRACKER_PORT=5000;
-    protected static final int SERVER_PORT=5001;
     protected static final HashSet<String> tempIpList=new HashSet<>();
     private static String message;
-    protected static String strUrl="http://ipv4.download.thinkbroadband.com/20MB.zip";
     private static LinkedList<String> freeServerList=new LinkedList<>();
     private static LinkedList<String> failedDownloadList=new LinkedList<>();
     private static LinkedList<String> successfulDowloadList=new LinkedList<>();
     public static boolean isCompleted=false;
     private final LogWritter logWritter=new LogWritter(this.getClass());
 
+    @Parameters(paramLabel = "tracker-ip",description = "ip address of tracker server")
+    private static  String TRACKER_IP=null;
+
+    @Parameters(paramLabel = "url",description = "url of file to be downloaded")
+    protected static String strUrl=null;
+
+    @Option(names={"-tp","--trackerport"})
+    private static int TRACKER_PORT=5000;
+
+    @Option(names={"-sp","--serverport"})
+    protected static int SERVER_PORT=5001;
 
 
     public static LinkedList<String> getFreeServerList(){

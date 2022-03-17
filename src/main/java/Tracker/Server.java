@@ -108,9 +108,10 @@ public class Server implements Runnable{
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static InetAddress inet;
-    private static final int PORT=5000;
     private final LogWritter logWritter=new LogWritter(this.getClass());
 
+    @Option(names={"-p","--port"},description="default port is 5000")
+    private static int PORT=5000;
 
     private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};

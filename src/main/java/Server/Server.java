@@ -187,12 +187,17 @@ public class Server implements Runnable{
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static DataOutputStream dos;
-    private static final int SERVER_PORT=5001;
-    private static final int TRACKER_PORT=5000;
-    private static final String TRACKER_IP="localhost";
     private final LogWritter logWritter=new LogWritter(this.getClass());
 
 
+    @Parameters(paramLabel = "tracker-ip",description = "ip address of tracker server")
+    private static  String TRACKER_IP=null;
+
+    @Option(names={"-tp","--trackerport"},description="default port is 5000")
+    private static int TRACKER_PORT=5000;
+
+    @Option(names={"-sp","--serverport"},description="default port is 5001")
+    protected static int SERVER_PORT=5001;
 
 
     private SSLServerSocket createServerSocket() {

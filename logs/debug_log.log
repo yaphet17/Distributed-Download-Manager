@@ -104,3 +104,22 @@
 2022-03-17 16:19:36.438 [INFO] --- Thread-1: file information received from client
 2022-03-17 16:19:36.438 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
 2022-03-17 16:19:37.140 [INFO] --- Thread-1: connected to remote server
+2022-03-17 16:30:46.134 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:31:35.274 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-17 16:31:35.288 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 16:31:35.486 [WARN] --- main: no active server available continue as standalone download
+2022-03-17 16:32:06.744 [INFO] --- main: failed to connect with tracker---tracker-ip=localhost
+2022-03-17 16:32:06.761 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 16:32:08.913 [INFO] --- Thread-1: download started
+2022-03-17 16:38:49.319 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:39:51.735 [INFO] --- main: failed to connect with tracker---tracker-ip=localhost
+2022-03-17 16:39:51.755 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 16:39:54.311 [INFO] --- Thread-1: download started
+2022-03-17 16:46:17.613 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-17 16:47:15.243 [INFO] --- main: server start listening on port 5001
+2022-03-17 16:47:15.318 [INFO] --- main: client socket created with address localhost:localhost
+2022-03-17 16:47:38.622 [INFO] --- main: failed to create server on port5000---Address already in use: JVM_Bind
+2022-03-17 16:47:38.693 [INFO] --- main: client socket created with address localhost:localhost
+2022-03-17 16:48:14.276 [INFO] --- main: failed to connect with tracker---tracker-ip=localhost
+2022-03-17 16:48:14.293 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 16:48:20.116 [INFO] --- Thread-1: download started
