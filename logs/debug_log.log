@@ -1,0 +1,80 @@
+2022-03-17 17:25:23.841 [INFO] --- main: server start listening on port 5001
+2022-03-17 17:25:23.988 [INFO] --- main: client socket created with address 192.168.0.248:192.168.0.248
+2022-03-17 17:27:09.486 [INFO] --- main: client socket create with address 192.168.0.248:192.168.0.248
+2022-03-17 17:27:09.493 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 17:27:11.592 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 17:27:11.593 [INFO] --- main: active servers available
+2022-03-17 17:27:13.029 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 17:27:13.030 [INFO] --- main: chunk boundary for 192.168.0.235 {10485760-20971520}
+2022-03-17 17:27:13.030 [INFO] --- Thread-1: download started
+2022-03-17 17:27:13.035 [WARN] --- Thread-1: folder doesn't exist---folder 20MB is created
+2022-03-17 17:27:13.036 [INFO] --- main: client socket created with address 192.168.0.235:5001
+2022-03-17 17:27:13.037 [INFO] --- main: client 192.168.0.248 connected
+2022-03-17 17:27:13.105 [INFO] --- Thread-1: file information received from client
+2022-03-17 17:27:13.108 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 17:27:13.414 [INFO] --- Thread-1: connected to remote server
+2022-03-17 17:29:14.661 [INFO] --- main: server start listening on port 5001
+2022-03-17 17:30:00.673 [INFO] --- main: failed to connect with tracker---Connection timed out: connect
+2022-03-17 17:30:00.681 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 17:30:31.415 [INFO] --- main: failed to connect with tracker---Connection timed out: connect
+2022-03-17 17:30:31.423 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 17:30:31.792 [INFO] --- Thread-1: download started
+2022-03-17 17:30:31.795 [WARN] --- Thread-1: folder doesn't exist---folder 20MB is created
+2022-03-17 18:01:52.996 [INFO] --- main: server start listening on port 5001
+2022-03-17 18:02:14.261 [INFO] --- main: server start listening on port 5001
+2022-03-17 18:02:25.244 [INFO] --- main: server start listening on port 5000
+2022-03-17 18:05:46.053 [INFO] --- main: failed to connect with tracker---Connection timed out: connect
+2022-03-17 18:05:46.062 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 18:05:47.237 [INFO] --- main: remote server returned HTTP response code 404
+2022-03-17 18:06:42.554 [INFO] --- main: failed to connect with tracker---Connection timed out: connect
+2022-03-17 18:06:42.562 [WARN] --- main: can't connect to the tracker continue as standalone download
+2022-03-17 18:06:43.325 [INFO] --- Thread-1: download started
+2022-03-17 18:06:43.330 [WARN] --- Thread-1: folder doesn't exist---folder 20MB is created
+2022-03-17 18:37:34.000 [INFO] --- main: server start listening on port 5001
+2022-03-17 18:37:34.103 [INFO] --- main: client socket created with address 192.168.0.248:192.168.0.248
+2022-03-17 18:37:59.253 [INFO] --- main: client socket create with address 192.168.0.248:192.168.0.248
+2022-03-17 18:37:59.261 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 18:38:00.167 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 18:38:00.168 [INFO] --- main: active servers available
+2022-03-17 18:38:01.315 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 18:38:01.316 [INFO] --- main: chunk boundary for 192.168.0.235 {10485760-20971520}
+2022-03-17 18:38:01.316 [INFO] --- Thread-1: download started
+2022-03-17 18:38:01.323 [INFO] --- main: client socket created with address 192.168.0.235:5001
+2022-03-17 18:38:01.325 [INFO] --- main: client 192.168.0.248 connected
+2022-03-17 18:38:01.397 [INFO] --- Thread-1: file information received from client
+2022-03-17 18:38:01.401 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 18:38:22.458 [INFO] --- Thread-1: connection timeout while downloading---Connection timed out: connect
+2022-03-17 18:38:30.120 [WARN] --- Thread-2: download failed for server 192.168.0.235
+2022-03-17 18:38:30.122 [INFO] --- Thread-2: session closed for server 192.168.0.235
+2022-03-17 18:39:11.204 [INFO] --- main: server start listening on port 5001
+2022-03-17 18:39:11.341 [INFO] --- main: client socket created with address 192.168.0.248:192.168.0.248
+2022-03-17 18:39:19.530 [INFO] --- main: client socket create with address 192.168.0.248:192.168.0.248
+2022-03-17 18:39:19.539 [INFO] --- main: sending request to tracker for active servers list
+2022-03-17 18:39:19.804 [INFO] --- main: failed to fetch active servers list---null
+2022-03-17 18:39:19.805 [INFO] --- main: active servers available
+2022-03-17 18:39:20.172 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-17 18:39:20.173 [INFO] --- main: chunk boundary for 192.168.0.235 {10485760-20971520}
+2022-03-17 18:39:20.172 [INFO] --- Thread-1: download started
+2022-03-17 18:39:20.179 [INFO] --- main: client socket created with address 192.168.0.235:5001
+2022-03-17 18:39:20.181 [INFO] --- main: client 192.168.0.248 connected
+2022-03-17 18:39:20.269 [INFO] --- Thread-1: file information received from client
+2022-03-17 18:39:20.272 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-17 18:39:20.569 [INFO] --- Thread-1: connected to remote server
+2022-03-17 18:40:29.235 [INFO] --- Thread-1: download successfully completed
+2022-03-17 18:46:31.005 [INFO] --- main: server start listening on port 5001
+2022-03-17 18:46:31.152 [INFO] --- main: client socket created with address 192.168.0.248:192.168.0.248
+2022-03-18 11:16:41.996 [INFO] --- main: tracker-server start listening on port 5000
+2022-03-18 11:18:03.525 [INFO] --- main: server start listening on port 5001
+2022-03-18 11:18:03.571 [INFO] --- main: client socket created with address localhost:localhost
+2022-03-18 11:19:33.530 [INFO] --- main: client socket create with address localhost:localhost
+2022-03-18 11:19:33.530 [INFO] --- main: sending request to tracker for active servers list
+2022-03-18 11:19:33.593 [INFO] --- main: failed to fetch active servers list---null
+2022-03-18 11:19:33.593 [INFO] --- main: active servers available
+2022-03-18 11:19:37.908 [INFO] --- main: chunk boundary for self {0-10485760}
+2022-03-18 11:19:37.908 [INFO] --- main: chunk boundary for 127.0.0.1 {10485760-20971520}
+2022-03-18 11:19:37.908 [INFO] --- Thread-1: download started
+2022-03-18 11:19:37.908 [INFO] --- main: client socket created with address 127.0.0.1:5001
+2022-03-18 11:19:37.908 [INFO] --- main: client 127.0.0.1 connected
+2022-03-18 11:19:37.923 [INFO] --- Thread-1: file information received from client
+2022-03-18 11:19:37.923 [INFO] --- Thread-1: chunk boundary {10485760-20971520}
+2022-03-18 11:19:42.110 [INFO] --- Thread-1: connected to remote server

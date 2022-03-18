@@ -1,44 +1,44 @@
 package Tracker;
+import LogWritter.LogWritter;
+import org.jline.utils.Log;
+import picocli.CommandLine;
+
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
+import java.util.Formatter;
 import java.util.HashSet;
+
+import static picocli.CommandLine.*;
 
 
 class Tracker {
     public static HashSet<String> clientList;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
     public  Tracker(){
         clientList=new HashSet<>();
     }
     synchronized public void addToList(String ip){
         clientList.add(ip);
-        System.out.println("Active server added");
     }
     synchronized  public void removeFromList(String ip){
         clientList.remove(ip);
-        System.out.println("Server removed");
     }
     synchronized public void getIpList(DataOutputStream dos){
         try{
             if(clientList.size()==0){
-                dos.writeUTF("null");//notify requesting client there no is active server
-                System.out.println("no active serevr");
+                dos.writeUTF("null");//notify requesting client there is no active server
                 return;
             }
-            System.out.println("sending active server ip list");
             for(String ip:clientList){
                 dos.writeUTF(ip);
-                System.out.println("Server: "+ip);
             }
-            dos.writeUTF("fin");
-            System.out.println("Ip list sent");
         }catch(IOException e){
-            e.printStackTrace();
+            logWritter.writeLog("error to send active server list to client---"+e.getMessage(),"error");
         }
-
     }
 
 }
@@ -53,6 +53,7 @@ class ClientHandler implements Runnable{
     private String message;
     private final String ip;
     private final InetAddress inet;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
     public ClientHandler(SSLSocket socket,Tracker tracker){
         this.socket=socket;
@@ -63,87 +64,88 @@ class ClientHandler implements Runnable{
             dis=new DataInputStream(socket.getInputStream());
             dos=new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            logWritter.writeLog("failed to attach stream to socket---"+e.getMessage(),"error");
         }
         t=new Thread(this);
         t.start();
     }
     public void run(){
+        Formatter formatter = new Formatter();
         try {
             //receive client request to give service
             message=dis.readUTF();
-            System.out.println("request recieved: "+message);
             switch (message) {
                 case "server":
                     tracker.addToList(ip);//if message=server register as active server
+                    formatter.format("%14s %14s %17s\n", ip, inet.getHostName(), "register service");
                     break;
                 case "rm" :
                     tracker.removeFromList(ip);//if message=rm remove server from active servers list
+                    formatter.format("%14s %14s %17s\n", ip, inet.getHostName(), "remove service");
                     break;
                 case "iplist" :
                     tracker.getIpList(dos);//if message=iplist send active servers ip list to invoking machine
+                    formatter.format("%14s %14s %17s\n", ip, inet.getHostName(), "request service");
                     break;
             }
+            System.out.println(formatter);
             dos.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+           logWritter.writeLog("failed to receive message from client---"+e.getMessage(),"error");
         }finally {
-
             try {
                 dis.close();;
                 dos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logWritter.writeLog(e.getMessage(),"eror");
             }
         }
     }
 }
-public class Server{
+@Command(name="tracker",description = "start tracker server", mixinStandardHelpOptions = true)
+public class Server implements Runnable{
 
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static InetAddress inet;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
-    private static final int PORT=5000;
+    @Option(names={"-p","--port"},description="default port is 5000")
+    private static int PORT=5000;
 
-
-    private static SSLServerSocket createServerSocket() {
+    private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
-        //"SSL_DH_anon_WITH_RC4_128_MD5"
-        //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
         try {
-            System.out.println("creating a server socket....");
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(PORT);
             serverSocket.setEnabledCipherSuites(CIPHERS);
-            System.out.println("server socket created");
             serverSocket.setEnableSessionCreation(true);
+            logWritter.writeLog("tracker-server start listening on port "+PORT,"info");
         } catch (IOException e1) {
-            e1.printStackTrace();
-
+            logWritter.writeLog("failed to create server on port"+PORT+"---"+e1.getMessage(),"error");
         }
         return serverSocket;
     }
     //Run server and handle client requests
-    public static void runServer(){
+    public void runServer(){
         try {
-            System.out.println("Server start listening on port:"+PORT);
             //server start listening
             Tracker tracker=new Tracker();
+            //prepare table to track client request
+            Formatter fmt = new Formatter();
+            System.out.println(fmt.format("%15s %15s %15s\n", "Ip", "Host Name", "Service"));
             while(true){
                 socket=(SSLSocket) server.accept();
                 inet=socket.getInetAddress();
-                System.out.println("client "+inet.getHostAddress()+" connected");
                 new ClientHandler(socket,tracker);
-
             }
         } catch (IOException e) {
-            e.printStackTrace();
+           logWritter.writeLog("failed to connect with client---"+e.getMessage(),"error");
         }
 
     }
-    public static void main(String[] args){
+    public void run(){
         //creating server
         server=createServerSocket();
         runServer();

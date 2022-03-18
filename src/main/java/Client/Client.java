@@ -1,6 +1,9 @@
 package Client;
 
+import LogWritter.LogWritter;
 import me.tongfei.progressbar.ProgressBar;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -9,8 +12,9 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.*;
+
+import static picocli.CommandLine.*;
 
 class Downloader implements Runnable{
 
@@ -20,6 +24,7 @@ class Downloader implements Runnable{
     private boolean self;
     private Thread t;
     private long actualSize;
+    private LogWritter logWritter=new LogWritter(this.getClass());
 
 
     public Downloader(long start,long end,int index,boolean self) {
@@ -41,10 +46,10 @@ class Downloader implements Runnable{
         return fileName.substring(0,fileName.lastIndexOf("."));
     }
     public long getPercentage(long i){
-        return (100-((actualSize-i)*100)/actualSize);
+        return (i*100)/actualSize;
     }
     public void run() {
-        System.out.println("download started");
+        logWritter.writeLog("download started","info");
         RandomAccessFile file=null;
         File tempFile;
         InputStream input=null;
@@ -56,18 +61,37 @@ class Downloader implements Runnable{
         ProgressBar pb = null;
         try {
             String fileName=getFileName(Distributer.fileName);
-            String folderName="../../../client-temp-files/"+getFolderName(fileName);
-            File folder=new File(folderName);
-            if(!folder.exists()){
-                folder.mkdir();
-                System.out.println("folder "+folderName+" created");
+            String folderName="client-temp-files";
+            //all client files goes here
+            File mainFolder=new File(folderName);
+            //create folder if it doesn't exist
+            if(!mainFolder.exists()){
+                if(mainFolder.mkdir()){
+                    logWritter.writeLog("folder doesn't exist---folder "+folderName+" is created","warn");
+                }else{
+                    logWritter.writeLog("folder doesn't exist---failed to create "+folderName,"error");
+                }
             }
-            tempFile=new File(folderName+"/"+index+"-"+fileName);
+            //files of specific download goes here
+            File targetFolder=new File(mainFolder.getName()+"/"+getFolderName(fileName));
+            //create folder if it doesn't exist
+            if(!targetFolder.exists()){
+                if(targetFolder.mkdir()){
+                    logWritter.writeLog("folder doesn't exist---folder "+targetFolder.getName()+" is created","warn");
+                }else{
+                    logWritter.writeLog("folder doesn't exist---failed to create "+targetFolder.getName(),"error");
+                }
+            }
+            //if the download is standalone download omit index from file name or append if it is distributed
+            if(self){
+                tempFile=new File(mainFolder.getName()+"/"+targetFolder.getName()+"/"+fileName);
+            }else {
+                tempFile=new File(mainFolder.getName()+"/"+targetFolder.getName()+"/"+index+"-"+fileName);
+            }
             file=new RandomAccessFile(tempFile,"rw");
             input = Distributer.connection.getInputStream();
             //skipping some bytes
             input.skip(downloaded);
-            System.out.println("Start:"+start+" End:"+end+" downloded:"+downloaded);
             byte[] buffer;
             int read;
             //command line progress bar to indicate download
@@ -87,33 +111,33 @@ class Downloader implements Runnable{
                 file.write(buffer, 0, read);
                 downloaded += read;
                 actualDownloaded=downloaded-start;
-                pb.stepBy(getPercentage(actualDownloaded));
+                pb.stepTo(actualDownloaded);
             }
             isSuccessful= actualDownloaded == actualSize;
-            //if download completed succesfully stream the chunk back to client
+            //if download completed successfully stream the chunk back to client
             if(isSuccessful) {
-                pb.stepTo(100);
                 pb.setExtraMessage("Completed");
+                logWritter.writeLog("download successfully completed","info");
             }
         } catch (ConnectException e) {
-            System.out.println("connection timeout");
+            logWritter.writeLog("connection timeout while downloading---"+e.getMessage(),"error");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+          logWritter.writeLog("file not found","error");
         } catch (IOException e) {
-            e.printStackTrace();
+           logWritter.writeLog(e.getMessage(),"error");
         } finally {
             if(file!=null) {
                 try {
                     file.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logWritter.writeLog(e.getMessage(),"error");
                 }
             }
             if(input!=null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logWritter.writeLog(e.getMessage(),"error");
                 }
             }
         }
@@ -125,12 +149,16 @@ class Downloader implements Runnable{
         }else{
             Client.addFreeServer("localhost");
         }
-        System.out.println("download completed");
+        //close client thread if the download is standalone and the completed
+        if(self&&isSuccessful){
+            Client.closeClient();
+        }
     }
 
 
 }
 class Assembler{
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
     public String getFileName(String url) {
         if(url.contains("?")){
@@ -140,20 +168,24 @@ class Assembler{
         return url.substring(url.lastIndexOf("/")+1);
     }
     public void assemble() {
+        logWritter.writeLog("assembling files","info");
         File[] fileList;
         FileInputStream fis=null;
         BufferedInputStream bis=null;
         String fileName=getFileName(Distributer.fileName);
-        System.out.println("assembling..");
-        String targetFolderName="../../../Downloads";
+        String targetFolderName="Downloads";
         File targetFolder=new File(targetFolderName);
         //create download folder if it doesn't exist
         if(!targetFolder.exists()){
-            targetFolder.mkdir();
-            System.out.println("folder "+targetFolder.getName()+" created");
+            if(targetFolder.mkdir()){
+                logWritter.writeLog("folder doesn't exist---folder "+targetFolderName+" is created","warn");
+            }else{
+                logWritter.writeLog("folder doesn't exist---failed to create "+targetFolderName,"error");
+            }
+
         }
         File targetFile=new File(targetFolder.getName()+"/"+fileName);
-        String folderName="../../../client-temp-files/"+fileName.substring(0,fileName.lastIndexOf("."));
+        String folderName="client-temp-files/"+fileName.substring(0,fileName.lastIndexOf("."));
         File folder=new File(folderName);
         try {
             fileList=folder.listFiles();
@@ -162,9 +194,7 @@ class Assembler{
             Arrays.sort(fileList,(a,b)->a.getName().compareTo(b.getName()));
             byte[] buffer=new byte[16*1024];
             int r;
-
             for(File f:fileList){
-                System.out.println("assemble file "+f.getName());
                 fis=new FileInputStream(f);
                 bis=new BufferedInputStream(fis);
                 while((r=bis.read(buffer))!=-1){
@@ -173,17 +203,20 @@ class Assembler{
                 }
                 fos.flush();
                 bos.flush();
+                //f.delete();
             }
             fos.close();
             bos.close();
             fis.close();
             bis.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+                logWritter.writeLog("file not found---"+e.getMessage(),"error");
         } catch (IOException e) {
-            e.printStackTrace();
+            logWritter.writeLog(e.getMessage(),"error");
         }
-        System.out.println("successfully assembled");
+        logWritter.writeLog("files successfully assembled","info");
+        //close client thread
+        Client.closeClient();
     }
 }
 
@@ -198,6 +231,7 @@ class ServerHandler implements Runnable{
     private final int index;
     private final long size;
     private final Thread t;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
 
     public ServerHandler(String ip,long start,long end,long size,int index){
         this.ip=ip;
@@ -211,7 +245,7 @@ class ServerHandler implements Runnable{
             dis=new DataInputStream(socket.getInputStream());
             dos=new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            e.printStackTrace();
+            logWritter.writeLog("failed to attach stream to socket---"+e.getMessage(),"error");
         }
         this.size=size;
         this.index=index;
@@ -221,17 +255,15 @@ class ServerHandler implements Runnable{
     }
     private SSLSocket createSocket(String ip) {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
-        //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         SSLSocket socket = null;
         try {
-            System.out.println("creating a client socket....");
             socket = (SSLSocket) socketFactory.createSocket(ip,Client.SERVER_PORT);
-            System.out.println("client socket created");
             socket.setEnabledCipherSuites(CIPHERS);
             socket.setEnableSessionCreation(true);
+            logWritter.writeLog("client socket created with address "+ip+":"+Client.SERVER_PORT,"info");
         } catch (IOException e1) {
-            e1.printStackTrace();
+            logWritter.writeLog("failed to create server with address"+ip+":"+Client.SERVER_PORT+"---"+e1.getMessage(),"error");
         }
         return socket;
     }
@@ -250,70 +282,75 @@ class ServerHandler implements Runnable{
         Client.addSuccessfulDownload(start+"-"+end);
         //if all downloads are completed start assembling
         if(Client.getSuccessfulDownloadList().size()==Distributer.noServer+1){
+            logWritter.writeLog("file successfully receivedfrom "+ip,"info");
             new Assembler().assemble();
             return;
         }
         if(!Client.getFailedDownloadList().isEmpty()){//if download is successful and there is any failed download redistribute
+            logWritter.writeLog("redistributing chunk","warn");
             Distributer.redistribute();
         }
-        System.out.println("File completely received!");
+
     }
     private void failedDownload(){
+        logWritter.writeLog("download failed for server "+ip,"warn");
         Client.addFailedDownload(start+"-"+end+"-"+index);
         //if download failed and there is any free server redistribute
         if(!Client.getFreeServerList().isEmpty()){
+            logWritter.writeLog("redistributing chunk","warn");
             Distributer.redistribute();
         }
     }
     public void run(){
-
         RandomAccessFile file=null;
         byte[] buffer=new byte[16*1024];
         int b;
         try {
             //sending download information to servers
-            System.out.println("sending file information to servers");
             dos.writeUTF(Client.strUrl);
-            System.out.println("Url sent");
             dos.writeUTF(String.valueOf(start));
             dos.writeUTF(String.valueOf(end));
-            System.out.println("Chunk boundary sent to: "+inet.getHostAddress());
+            logWritter.writeLog("file information sent to "+inet.getHostAddress(),"");
             String fileName=getFileName(Client.strUrl,index);
-            String folderName="../../../client-temp-files/"+getFolderName(fileName.substring(2));
+            String folderName="client-temp-files/"+getFolderName(fileName.substring(2));
             File folder=new File(folderName);
             if(!folder.exists()){
-                folder.mkdir();
-                System.out.println("folder "+folderName+" created");
+               if(folder.mkdir()){
+                   logWritter.writeLog("folder doesn't exist---folder "+folderName+" is created","warn");
+               }else{
+                   logWritter.writeLog("folder doesn't exist---failed to create folder "+folderName,"error");
+               }
             }
             file=new RandomAccessFile(folderName+"/"+fileName,"rw");
             //start receiving chunks from servers
-            System.out.println("receiving chunk from "+ip);
             int status;
             status=dis.read();
+            //create new progressbar to indicate the progress of streaming files to client
+            ProgressBar pb=new ProgressBar("Receiving",file.length());
+            long bytes=0;
             if(status==1) {
                 while ((b = dis.read(buffer)) != -1) {
-                    System.out.print("\rrecieving...");
                     file.write(buffer, 0, b);
                     buffer = new byte[16 * 1024];
+                    bytes+=buffer.length;
+                    pb.stepTo(bytes);
                 }
+                pb.setExtraMessage("Completed");
                 successfulDownload();
             }else{
                 failedDownload();
             }
-
         } catch (IOException e) {
            failedDownload();
-            e.printStackTrace();
         }finally {
             try {
                 dos.flush();
-                //file.close();
                 dis.close();
                 dos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logWritter.writeLog(e.getMessage(),"error");
             }
-            System.out.println("session closed");
+            logWritter.writeLog("session closed for server "+ip,"info");
         }
 
 
@@ -326,11 +363,12 @@ class Distributer{
     private static  URL url=null;
     protected static HttpURLConnection connection=null;
     protected static String strUrl;
-    //https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1280_10MG.mp4
     public static String fileName;
     private static long downloadSize;
     protected static int noServer;
-
+    private Thread t;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
+    private int retryCount=0;
     public Distributer(String strUrl){
         this.strUrl=strUrl;
         if(initialize()){
@@ -341,7 +379,7 @@ class Distributer{
         this.strUrl=strUrl;
         this.noServer=noServer;
         if(initialize()){
-            distribute();
+          distribute();
         }
 
     }
@@ -355,13 +393,16 @@ class Distributer{
             downloadSize=connection.getContentLengthLong();
             fileName=url.getFile();
             if(connection.getResponseCode()/100!=2) {
-                System.out.println("Remote server returned HTTP response code: "+connection.getResponseCode());
+                logWritter.writeLog("remote server returned HTTP response code "+connection.getResponseCode(),"error");
                 return false;
             }
             connection.connect();
         } catch (IOException e) {
-            System.out.println("connection time out");
-            initialize();
+            logWritter.writeLog("connection timeout","warn");
+            if(retryCount<=10){
+                retryCount++;
+                initialize();
+            }
         }
         return true;
     }
@@ -370,22 +411,20 @@ class Distributer{
         long chunkSize=downloadSize/(noServer+1);
         int remainder=(int)(downloadSize-((noServer+1)*chunkSize));
         long start=0;
-        System.out.println(chunkSize);
         long end=chunkSize+remainder;
         int index=1;
         new Downloader(start,end,index++,false);
-        System.out.println("Chunk boundary for:self "+start+"-"+end);
+        logWritter.writeLog("chunk boundary for self {"+start+"-"+end+"}","info");
         for(String ip:Client.tempIpList){
             start=end;
             end+=chunkSize;
-            System.out.println("Chunk boundary for server: "+ip+" "+start+"-"+end);
+            logWritter.writeLog("chunk boundary for "+ip+" {"+start+"-"+end+"}","info");
             new ServerHandler(ip,start,end,downloadSize,index);
             serverChunkMap.put(ip,start+"-"+end);
             index++;
         }
     }
     public static void redistribute(){
-        System.out.println("redistributing chunk...");
         //number of failed download
         int n= Math.min(Client.getFailedDownloadList().size(), Client.getFreeServerList().size());//get minimum size
         long start,end;
@@ -399,10 +438,8 @@ class Distributer{
             index=Integer.parseInt(chunkInfo[2]);
             ip=Client.getFreeServer(i);
             if(ip.equals("localhost")||Client.getFreeServer(i).equals("127.0.0.1")){
-                System.out.println("Chunk redistributed to self");
                 new Downloader(start,end,index,false);
             }else{
-                System.out.println("chunk redistributed to ip="+ip);
                 new ServerHandler(ip,start,end,downloadSize,index);
             }
             Client.removeFreeServer(ip);//remove server from free server list once download is assigned
@@ -413,21 +450,32 @@ class Distributer{
     }
 
 }
-public class Client {
+@Command(name="client",description = "start downloading file", mixinStandardHelpOptions = true)
+public class Client implements Runnable{
 
     private static SSLSocket socket;
     private static InetAddress inet;
     private static DataInputStream dis;
     private static DataOutputStream dos;
-    private static final String TRACKER_IP="localhost";
-    private static final int TRACKER_PORT=5000;
-    protected static final int SERVER_PORT=5001;
     protected static final HashSet<String> tempIpList=new HashSet<>();
     private static String message;
-    protected static String strUrl="http://ipv4.download.thinkbroadband.com/20MB.zip";
     private static LinkedList<String> freeServerList=new LinkedList<>();
     private static LinkedList<String> failedDownloadList=new LinkedList<>();
     private static LinkedList<String> successfulDowloadList=new LinkedList<>();
+    public static boolean isCompleted=false;
+    private final LogWritter logWritter=new LogWritter(this.getClass());
+
+    @Parameters(paramLabel = "tracker-ip",description = "ip address of tracker server")
+    private static  String TRACKER_IP=null;
+
+    @Parameters(paramLabel = "url",description = "url of file to be downloaded")
+    protected static String strUrl=null;
+
+    @Option(names={"-tp","--trackerport"})
+    private static int TRACKER_PORT=5000;
+
+    @Option(names={"-sp","--serverport"})
+    protected static int SERVER_PORT=5001;
 
 
     public static LinkedList<String> getFreeServerList(){
@@ -466,73 +514,76 @@ public class Client {
     public static void removeSuccessfulDownload(String chunkInfo){
         successfulDowloadList.remove(chunkInfo);
     }
-    private static SSLSocket createSocket() {
+    private SSLSocket createSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
-        //"SSL_DH_anon_WITH_RC4_128_MD5"
-        //java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         SSLSocket socket = null;
         try {
-            System.out.println("creating a client socket....");
             socket = (SSLSocket) socketFactory.createSocket(TRACKER_IP, TRACKER_PORT);
-            System.out.println("client socket created");
+            logWritter.writeLog("client socket create with address "+TRACKER_IP+":"+TRACKER_IP,"info");
             socket.setEnabledCipherSuites(CIPHERS);
             socket.setEnableSessionCreation(true);
         } catch (IOException e1) {
-            System.out.println("can't connet to tracker:"+e1.getMessage());
-            e1.printStackTrace();
+            logWritter.writeLog("failed to connect with tracker---"+e1.getMessage(),"error");
+            return null;
         }
         return socket;
     }
-    private static boolean requestIPList(){
+    private boolean requestIPList(){
         //requesting service from tracker server
-        System.out.println("sending request");
-        //writer.write("iplist");
+        logWritter.writeLog("sending request to tracker for active servers list","info");
         try{
             dos.writeUTF("iplist");
-            System.out.println("request sent: iplist");
         }catch(IOException e){
-            e.printStackTrace();
+           logWritter.writeLog("failed to send request to tracker---"+e.getMessage(),"error");
         }
-        System.out.println("request sent");
         //receiving active servers list
-        System.out.println("start recieving ip list");
         try {
             message=dis.readUTF();
             if(message.equals("null")){
-                System.out.println("no server available");
                 return false;
             }
             do{
                 tempIpList.add(message);
-                System.out.println(message);
-                System.out.println("active servers available");
             }while(!(message=dis.readUTF()).equals("fin"));
         } catch (IOException e) {
-            e.printStackTrace();
+            logWritter.writeLog("failed to fetch active servers list---"+e.getMessage(),"error");
         }
         return true;
     }
 
-    public static void main(String[] args) {
+    public static void closeClient(){
+        isCompleted=true;
+    }
+    public void run(){
         Distributer distributer;
         socket=createSocket();
-        inet=socket.getInetAddress();
-        try {
-            dis=new DataInputStream(socket.getInputStream());
-            dos=new DataOutputStream(socket.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //check if there is active servers if not download by it self
-        System.out.println("requesting active servers");
-        if (!requestIPList()) {
-            System.out.println("Downloading by it self");
+        if(socket==null){
+            logWritter.writeLog("can't connect to the tracker continue as standalone download","warn");
             new Distributer(strUrl);
         }else{
-            new Distributer(strUrl,tempIpList.size());
+            inet=socket.getInetAddress();
+            try {
+                dis=new DataInputStream(socket.getInputStream());
+                dos=new DataOutputStream(socket.getOutputStream());
+            } catch (IOException e) {
+                logWritter.writeLog("failed to attach stream to socket---"+e.getMessage(),"error");
+            }
+            //check if there is active servers if not download by it self
+            if (!requestIPList()) {
+                logWritter.writeLog("no active server available continue as standalone download","warn");
+                new Distributer(strUrl);
+            }else{
+                logWritter.writeLog("active servers available","info");
+                new Distributer(strUrl,tempIpList.size());
+            }
 
         }
+
+        while (!isCompleted){
+
+        }
+        logWritter.writeLog("session closed","info");
     }
 
 }

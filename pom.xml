@@ -44,15 +44,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>Tracker.Server</mainClass>
-                        </manifest>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>Server.Server</mainClass>
-                        </manifest>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>Client.Client</mainClass>
+                            <mainClass>main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
