@@ -84,7 +84,7 @@ class Downloader implements Runnable{
             }
             //if the download is standalone download omit index from file name or append if it is distributed
             if(self){
-                tempFile=new File(mainFolder.getName()+"/"+targetFolder.getName()+"/"+"-"+fileName);
+                tempFile=new File(mainFolder.getName()+"/"+targetFolder.getName()+"/"+fileName);
             }else {
                 tempFile=new File(mainFolder.getName()+"/"+targetFolder.getName()+"/"+index+"-"+fileName);
             }
@@ -203,6 +203,7 @@ class Assembler{
                 }
                 fos.flush();
                 bos.flush();
+                //f.delete();
             }
             fos.close();
             bos.close();
