@@ -14,6 +14,11 @@ are no peers connected
 and download the requested chunk only and stream it back to the client.
 - Client fetchs the ip of active servers and distribute the chunks to all servers including it self, recieve chunks from servers assemble it to create the original file.It also assigns another server when a particular server fails to download a chunk.
 
+## Tech Stack
+  - [Picocli](https://picocli.info/)  for command line interface
+  - [Log4j2](https://logging.apache.org/log4j/2.x/) for logging
+  - [Maven](https://maven.apache.org/) for dependency management
+  
 ## Setup
   - You need to have jdk installed in your pc and JAVA_HOME configured in enviroment variables.
   - Download [Maven](https://maven.apache.org/download.cgi) and configure M2_HOME in enviroment variables.
