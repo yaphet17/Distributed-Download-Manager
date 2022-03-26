@@ -1,12 +1,13 @@
 # Distributed-Download-Manager
 
-Distributed Download Manager is a p2p command-line system which utilizes other computers which are connected locally to a partcular computer by distributing the load of 
-downloading a large file to peer machines.It divides the large file in to defined
-number of chunks according to the size of the file and send chunk boundaries
-to peer computers in the same network, the peer computers will then download
-the chunk and send it back to the computer that initialize the download. The
+* Distributed Download Manager is a p2p command-line system which utilizes other computers which are connected locally by distributing the load of 
+downloading a large file to peer machines.It divides the large file in to
+number of chunks depending on the size of the file and send chunk boundaries
+to peer computers in the same network.The peer computers will then download
+the chunk and send it back to the computer that initializes the download and the computer that intializes the download will recieves the chunks and
+assemble them in a correct order to create the original file.The client
 computer that initializes the download will download the file by itself if there
-are no peers connected
+are no peers connected.
 
 ## System Architecture
 - Tracker server registers servers which have an internet connection and send active servers list when requested by clients.
