@@ -24,7 +24,7 @@ and download the requested chunk only and stream it back to the client.
   - You need to have jdk installed in your pc and JAVA_HOME configured in enviroment variables.
   - Download [Maven](https://maven.apache.org/download.cgi) and configure M2_HOME in enviroment variables.
   - Clone this repository to your pc
-  - Go to the cloned repo path using  `cd yo.ur-path/Distributed-Download-Manager`.
+  - Go to the cloned repo path using  `cd your-path/Distributed-Download-Manager`.
   - Run the following command `mvn compile assembly:single` then `mvn install`.
   - You will notice that target folder is created so you can now run the program using the command line.
     - use `java -jar "target/DDM.jar" tracker` to run the tracker.
