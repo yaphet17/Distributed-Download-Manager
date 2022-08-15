@@ -21,9 +21,9 @@ import LogWritter.LogWriter;
 public class Server implements Runnable {
 
     @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
-    private static final String TRACKER_IP = null;
+    private static String TRACKER_IP = null;
     @Option(names = {"-tp", "--trackerport"}, description = "default port is 5000")
-    private static final int TRACKER_PORT = 5000;
+    private static int TRACKER_PORT = 5000;
     @Option(names = {"-sp", "--serverport"}, description = "default port is 5001")
     protected static int SERVER_PORT = 5001;
     private static SSLServerSocket server;

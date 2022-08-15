@@ -20,7 +20,7 @@ public class Server implements Runnable {
     private static SSLSocket socket;
     private static InetAddress inet;
     @Option(names = {"-p", "--port"}, description = "default port is 5000")
-    private static final int PORT = 5000;
+    private static int PORT = 5000;
     private final LogWriter logWritter = new LogWriter(this.getClass());
 
     private SSLServerSocket createServerSocket() {

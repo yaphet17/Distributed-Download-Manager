@@ -35,9 +35,9 @@ public class Client implements Runnable {
     private static final LinkedList<String> failedDownloadList = new LinkedList<>();
     private static final LinkedList<String> successfulDowloadList = new LinkedList<>();
     @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
-    private static final String TRACKER_IP = null;
+    private static String TRACKER_IP = null;
     @Option(names = {"-tp", "--trackerport"})
-    private static final int TRACKER_PORT = 5000;
+    private static int TRACKER_PORT = 5000;
     private final LogWriter logWriter = new LogWriter(this.getClass());
 
     public static LinkedList<String> getFreeServerList() {
