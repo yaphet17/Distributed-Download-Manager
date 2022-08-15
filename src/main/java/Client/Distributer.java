@@ -10,8 +10,8 @@ import LogWritter.LogWriter;
 
 public class Distributer {
 
-    protected static final Map<String, String> serverChunkMap = new LinkedHashMap<>();
     private static final LogWriter logWriter = new LogWriter(Distributer.class);
+    protected static final Map<String, String> serverChunkMap = new LinkedHashMap<>();
     public static String fileName;
     protected static HttpURLConnection connection = null;
     protected static String strUrl;

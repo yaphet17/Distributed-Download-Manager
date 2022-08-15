@@ -15,8 +15,7 @@ import me.tongfei.progressbar.ProgressBar;
 
 public class ServerHandler implements Runnable {
 
-    private final LogWriter logWriter = new LogWriter(ServerHandler.class);
-
+    private static final LogWriter logWriter = new LogWriter(ServerHandler.class);
     private final SSLSocket socket;
     private final InetAddress inet;
     private final String ip;

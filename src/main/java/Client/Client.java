@@ -21,6 +21,7 @@ import picocli.CommandLine.Command;
 @Command(name = "client", description = "start downloading file", mixinStandardHelpOptions = true)
 public class Client implements Runnable {
 
+    private static final LogWriter logWriter = new LogWriter(Client.class);
     protected static final Set<String> tempIpList = new HashSet<>();
     private static final LinkedList<String> freeServerList = new LinkedList<>();
     private static final LinkedList<String> failedDownloadList = new LinkedList<>();
@@ -36,10 +37,9 @@ public class Client implements Runnable {
     private static DataOutputStream dos;
     private static String message;
     @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
-    private static final String TRACKER_IP = null;
+    private static String TRACKER_IP = null;
     @Option(names = {"-tp", "--trackerport"})
-    private static final int TRACKER_PORT = 5000;
-    private final LogWriter logWriter = new LogWriter(Client.class);
+    private static int TRACKER_PORT = 5000;
 
     public static LinkedList<String> getFreeServerList() {
         return freeServerList;
