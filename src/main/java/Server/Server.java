@@ -29,7 +29,7 @@ public class Server implements Runnable {
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static DataOutputStream dos;
-    private final LogWriter logWritter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Server.class);
 
     private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
@@ -39,9 +39,9 @@ public class Server implements Runnable {
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(SERVER_PORT);
             serverSocket.setEnabledCipherSuites(CIPHERS);
             serverSocket.setEnableSessionCreation(true);
-            logWritter.writeLog("server start listening on port " + SERVER_PORT, "info");
+            logWriter.writeLog("server start listening on port " + SERVER_PORT, "info");
         } catch (IOException e1) {
-            logWritter.writeLog("failed to create server on port" + SERVER_PORT + "---" + e1.getMessage(), "error");
+            logWriter.writeLog("failed to create server on port" + SERVER_PORT + "---" + e1.getMessage(), "error");
         }
         return serverSocket;
     }
@@ -54,9 +54,9 @@ public class Server implements Runnable {
             socket = (SSLSocket) socketFactory.createSocket(TRACKER_IP, TRACKER_PORT);
             socket.setEnabledCipherSuites(CIPHERS);
             socket.setEnableSessionCreation(true);
-            logWritter.writeLog("client socket created with address " + TRACKER_IP + ":" + TRACKER_IP, "info");
+            logWriter.writeLog("client socket created with address " + TRACKER_IP + ":" + TRACKER_IP, "info");
         } catch (IOException e1) {
-            logWritter.writeLog("failed to connect with tracker---" + e1.getMessage(), "error");
+            logWriter.writeLog("failed to connect with tracker---" + e1.getMessage(), "error");
         }
         return socket;
     }
@@ -70,7 +70,7 @@ public class Server implements Runnable {
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             connection.connect();
         } catch (Exception e) {
-            logWritter.writeLog("connection is not available---" + e.getMessage(), "warn");
+            logWriter.writeLog("connection is not available---" + e.getMessage(), "warn");
             return false;
         }
         connection.disconnect();
@@ -86,21 +86,21 @@ public class Server implements Runnable {
         try {
             dos = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            logWritter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
+            logWriter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
         }
         //inform the tracker server is ready to accept download request
         if (!checkConnection()) {
             try {
                 dos.writeUTF("noconnection");
             } catch (IOException e) {
-                logWritter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
+                logWriter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
             }
             return;
         }
         try {
             dos.writeUTF("server");
         } catch (IOException e) {
-            logWritter.writeLog("failed to register to tracker---" + e.getMessage(), "error");
+            logWriter.writeLog("failed to register to tracker---" + e.getMessage(), "error");
         }
         InetAddress inet = socket.getInetAddress();
         //accept client request
@@ -108,10 +108,10 @@ public class Server implements Runnable {
         while (true) {
             try {
                 socket = (SSLSocket) server.accept();
-                logWritter.writeLog("client " + inet.getHostAddress() + " connected", "info");
+                logWriter.writeLog("client " + inet.getHostAddress() + " connected", "info");
                 new ClientHandler(socket);
             } catch (IOException e) {
-                logWritter.writeLog("failed to accept client request---" + e.getMessage(), "error");
+                logWriter.writeLog("failed to accept client request---" + e.getMessage(), "error");
             }
 
         }

@@ -33,12 +33,12 @@ public class Client implements Runnable {
     private static String message;
     private static final LinkedList<String> freeServerList = new LinkedList<>();
     private static final LinkedList<String> failedDownloadList = new LinkedList<>();
-    private static final LinkedList<String> successfulDowloadList = new LinkedList<>();
+    private static final LinkedList<String> successfulDownloadList = new LinkedList<>();
     @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
     private static String TRACKER_IP = null;
     @Option(names = {"-tp", "--trackerport"})
     private static int TRACKER_PORT = 5000;
-    private final LogWriter logWriter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Client.class);
 
     public static LinkedList<String> getFreeServerList() {
         return freeServerList;
@@ -73,19 +73,19 @@ public class Client implements Runnable {
     }
 
     public static LinkedList<String> getSuccessfulDownloadList() {
-        return successfulDowloadList;
+        return successfulDownloadList;
     }
 
     public static String getSuccessfulDownload(int i) {
-        return successfulDowloadList.get(i);
+        return successfulDownloadList.get(i);
     }
 
     public static void addSuccessfulDownload(String chunkInfo) {
-        successfulDowloadList.add(chunkInfo);
+        successfulDownloadList.add(chunkInfo);
     }
 
     public static void removeSuccessfulDownload(String chunkInfo) {
-        successfulDowloadList.remove(chunkInfo);
+        successfulDownloadList.remove(chunkInfo);
     }
 
     public static void closeClient() {

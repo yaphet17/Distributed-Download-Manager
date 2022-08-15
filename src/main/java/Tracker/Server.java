@@ -21,7 +21,7 @@ public class Server implements Runnable {
     private static InetAddress inet;
     @Option(names = {"-p", "--port"}, description = "default port is 5000")
     private static int PORT = 5000;
-    private final LogWriter logWritter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Server.class);
 
     private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
@@ -31,9 +31,9 @@ public class Server implements Runnable {
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(PORT);
             serverSocket.setEnabledCipherSuites(CIPHERS);
             serverSocket.setEnableSessionCreation(true);
-            logWritter.writeLog("tracker-server start listening on port " + PORT, "info");
+            logWriter.writeLog("tracker-server start listening on port " + PORT, "info");
         } catch (IOException e1) {
-            logWritter.writeLog("failed to create server on port" + PORT + "---" + e1.getMessage(), "error");
+            logWriter.writeLog("failed to create server on port" + PORT + "---" + e1.getMessage(), "error");
         }
         return serverSocket;
     }
@@ -52,7 +52,7 @@ public class Server implements Runnable {
                 new ClientHandler(socket, tracker);
             }
         } catch (IOException e) {
-            logWritter.writeLog("failed to connect with client---" + e.getMessage(), "error");
+            logWriter.writeLog("failed to connect with client---" + e.getMessage(), "error");
         }
 
     }

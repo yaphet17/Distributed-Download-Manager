@@ -21,7 +21,7 @@ public class ClientHandler implements Runnable {
 
     private final SSLSocket socket;
     private final Thread t;
-    private final LogWriter logWriter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(ClientHandler.class);
     private DataInputStream dis;
     private DataOutputStream dos;
     private long actualSize;

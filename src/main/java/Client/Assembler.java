@@ -12,7 +12,7 @@ import java.util.Arrays;
 import LogWritter.LogWriter;
 
 public class Assembler {
-    private final LogWriter logWriter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Assembler.class);
 
     public String getFileName(String url) {
         if (url.contains("?")) {

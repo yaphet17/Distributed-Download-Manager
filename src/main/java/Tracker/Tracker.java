@@ -8,7 +8,7 @@ import LogWritter.LogWriter;
 
 public class Tracker {
     public static HashSet<String> clientList;
-    private final LogWriter logWritter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Tracker.class);
 
     public Tracker() {
         clientList = new HashSet<>();
@@ -32,7 +32,7 @@ public class Tracker {
                 dos.writeUTF(ip);
             }
         } catch (IOException e) {
-            logWritter.writeLog("error to send active server list to client---" + e.getMessage(), "error");
+            logWriter.writeLog("error to send active server list to client---" + e.getMessage(), "error");
         }
     }
 

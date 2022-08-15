@@ -17,7 +17,7 @@ public class Distributer {
     protected static int noServer;
     private static URL url = null;
     private static long downloadSize;
-    private final LogWriter logWriter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Distributer.class);
     private Thread t;
     private int retryCount = 0;
 

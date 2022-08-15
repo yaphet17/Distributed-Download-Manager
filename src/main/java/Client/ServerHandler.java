@@ -22,7 +22,7 @@ public class ServerHandler implements Runnable {
     private final int index;
     private final long size;
     private final Thread t;
-    private final LogWriter logWriter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(ServerHandler.class);
     private DataInputStream dis;
     private DataOutputStream dos;
 

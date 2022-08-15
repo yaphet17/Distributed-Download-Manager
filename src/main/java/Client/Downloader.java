@@ -18,7 +18,7 @@ public class Downloader implements Runnable {
     private final boolean self;
     private final Thread t;
     private long actualSize;
-    private final LogWriter logWritter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(Downloader.class);
 
 
     public Downloader(long start, long end, int index, boolean self) {
@@ -47,7 +47,7 @@ public class Downloader implements Runnable {
     }
 
     public void run() {
-        logWritter.writeLog("download started", "info");
+        logWriter.writeLog("download started", "info");
         RandomAccessFile file = null;
         File tempFile;
         InputStream input = null;
@@ -65,9 +65,9 @@ public class Downloader implements Runnable {
             //create folder if it doesn't exist
             if (!mainFolder.exists()) {
                 if (mainFolder.mkdir()) {
-                    logWritter.writeLog("folder doesn't exist---folder " + folderName + " is created", "warn");
+                    logWriter.writeLog("folder doesn't exist---folder " + folderName + " is created", "warn");
                 } else {
-                    logWritter.writeLog("folder doesn't exist---failed to create " + folderName, "error");
+                    logWriter.writeLog("folder doesn't exist---failed to create " + folderName, "error");
                 }
             }
             //files of specific download goes here
@@ -75,9 +75,9 @@ public class Downloader implements Runnable {
             //create folder if it doesn't exist
             if (!targetFolder.exists()) {
                 if (targetFolder.mkdir()) {
-                    logWritter.writeLog("folder doesn't exist---folder " + targetFolder.getName() + " is created", "warn");
+                    logWriter.writeLog("folder doesn't exist---folder " + targetFolder.getName() + " is created", "warn");
                 } else {
-                    logWritter.writeLog("folder doesn't exist---failed to create " + targetFolder.getName(), "error");
+                    logWriter.writeLog("folder doesn't exist---failed to create " + targetFolder.getName(), "error");
                 }
             }
             //if the download is standalone download omit index from file name or append if it is distributed
@@ -115,27 +115,27 @@ public class Downloader implements Runnable {
             //if download completed successfully stream the chunk back to client
             if (isSuccessful) {
                 pb.setExtraMessage("Completed");
-                logWritter.writeLog("download successfully completed", "info");
+                logWriter.writeLog("download successfully completed", "info");
             }
         } catch (ConnectException e) {
-            logWritter.writeLog("connection timeout while downloading---" + e.getMessage(), "error");
+            logWriter.writeLog("connection timeout while downloading---" + e.getMessage(), "error");
         } catch (FileNotFoundException e) {
-            logWritter.writeLog("file not found", "error");
+            logWriter.writeLog("file not found", "error");
         } catch (IOException e) {
-            logWritter.writeLog(e.getMessage(), "error");
+            logWriter.writeLog(e.getMessage(), "error");
         } finally {
             if (file != null) {
                 try {
                     file.close();
                 } catch (IOException e) {
-                    logWritter.writeLog(e.getMessage(), "error");
+                    logWriter.writeLog(e.getMessage(), "error");
                 }
             }
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    logWritter.writeLog(e.getMessage(), "error");
+                    logWriter.writeLog(e.getMessage(), "error");
                 }
             }
         }

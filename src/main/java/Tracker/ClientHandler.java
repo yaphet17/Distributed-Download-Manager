@@ -17,7 +17,7 @@ public class ClientHandler implements Runnable {
     private final Thread t;
     private final String ip;
     private final InetAddress inet;
-    private final LogWriter logWritter = new LogWriter(this.getClass());
+    private final LogWriter logWriter = new LogWriter(ClientHandler.class);
     private DataInputStream dis;
     private DataOutputStream dos;
     private String message;
@@ -31,7 +31,7 @@ public class ClientHandler implements Runnable {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            logWritter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
+            logWriter.writeLog("failed to attach stream to socket---" + e.getMessage(), "error");
         }
         t = new Thread(this);
         t.start();
@@ -59,13 +59,13 @@ public class ClientHandler implements Runnable {
             System.out.println(formatter);
             dos.flush();
         } catch (IOException e) {
-            logWritter.writeLog("failed to receive message from client---" + e.getMessage(), "error");
+            logWriter.writeLog("failed to receive message from client---" + e.getMessage(), "error");
         } finally {
             try {
                 dis.close();
                 dos.close();
             } catch (IOException e) {
-                logWritter.writeLog(e.getMessage(), "eror");
+                logWriter.writeLog(e.getMessage(), "eror");
             }
         }
     }
