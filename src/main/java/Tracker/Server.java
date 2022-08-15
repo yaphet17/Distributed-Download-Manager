@@ -5,6 +5,7 @@ import static picocli.CommandLine.Option;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Formatter;
 
 import javax.net.ssl.SSLServerSocket;
@@ -24,11 +25,12 @@ public class Server implements Runnable {
     private static int PORT = 5000;
 
     private SSLServerSocket createServerSocket() {
-        String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
         try {
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(PORT);
+            String[] CIPHERS = serverSocket.getEnabledCipherSuites();
+            System.out.println(Arrays.asList(CIPHERS));
             serverSocket.setEnabledCipherSuites(CIPHERS);
             serverSocket.setEnableSessionCreation(true);
             logWriter.writeLog("tracker-server start listening on port " + PORT, "info");

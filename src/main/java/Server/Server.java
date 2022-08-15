@@ -32,11 +32,12 @@ public class Server implements Runnable {
     private static DataOutputStream dos;
 
     private SSLServerSocket createServerSocket() {
-        String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
+//        String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         SSLServerSocketFactory serverFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket serverSocket = null;
         try {
             serverSocket = (SSLServerSocket) serverFactory.createServerSocket(SERVER_PORT);
+            String[] CIPHERS = serverSocket.getEnabledCipherSuites();
             serverSocket.setEnabledCipherSuites(CIPHERS);
             serverSocket.setEnableSessionCreation(true);
             logWriter.writeLog("server start listening on port " + SERVER_PORT, "info");
@@ -47,11 +48,11 @@ public class Server implements Runnable {
     }
 
     private SSLSocket createSocket() {
-        String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         SSLSocket socket = null;
         try {
             socket = (SSLSocket) socketFactory.createSocket(TRACKER_IP, TRACKER_PORT);
+            String[] CIPHERS = socket.getEnabledCipherSuites();
             socket.setEnabledCipherSuites(CIPHERS);
             socket.setEnableSessionCreation(true);
             logWriter.writeLog("client socket created with address " + TRACKER_IP + ":" + TRACKER_IP, "info");
