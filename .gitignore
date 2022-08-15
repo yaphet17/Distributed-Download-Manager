@@ -1,0 +1,8 @@
+.idea
+*.class
+Downloads
+client-temp-files
+server-temp-files
+config
+target
+logs
