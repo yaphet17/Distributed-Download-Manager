@@ -20,16 +20,16 @@ import LogWritter.LogWriter;
 @Command(name = "server", description = "start download server", mixinStandardHelpOptions = true)
 public class Server implements Runnable {
 
-    @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
-    private static String TRACKER_IP = null;
-    @Option(names = {"-tp", "--trackerport"}, description = "default port is 5000")
-    private static int TRACKER_PORT = 5000;
+    private static final LogWriter logWriter = new LogWriter(Server.class);
     @Option(names = {"-sp", "--serverport"}, description = "default port is 5001")
     protected static int SERVER_PORT = 5001;
+    @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
+    private static final String TRACKER_IP = null;
+    @Option(names = {"-tp", "--trackerport"}, description = "default port is 5000")
+    private static final int TRACKER_PORT = 5000;
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static DataOutputStream dos;
-    private final LogWriter logWriter = new LogWriter(Server.class);
 
     private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
@@ -80,9 +80,7 @@ public class Server implements Runnable {
     public void run() {
         //creating a server
         server = createServerSocket();
-        //registering to tracker server
         socket = createSocket();
-        //attach inputstream to socket
         try {
             dos = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {

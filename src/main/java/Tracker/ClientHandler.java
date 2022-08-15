@@ -12,12 +12,12 @@ import LogWritter.LogWriter;
 
 public class ClientHandler implements Runnable {
 
+    private final LogWriter logWriter = new LogWriter(ClientHandler.class);
     private final SSLSocket socket;
     private final Tracker tracker;
     private final Thread t;
     private final String ip;
     private final InetAddress inet;
-    private final LogWriter logWriter = new LogWriter(ClientHandler.class);
     private DataInputStream dis;
     private DataOutputStream dos;
     private String message;

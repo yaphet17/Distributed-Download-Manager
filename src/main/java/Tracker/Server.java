@@ -16,12 +16,12 @@ import LogWritter.LogWriter;
 @Command(name = "tracker", description = "start tracker server", mixinStandardHelpOptions = true)
 public class Server implements Runnable {
 
+    private static final LogWriter logWriter = new LogWriter(Server.class);
     private static SSLServerSocket server;
     private static SSLSocket socket;
     private static InetAddress inet;
     @Option(names = {"-p", "--port"}, description = "default port is 5000")
     private static int PORT = 5000;
-    private final LogWriter logWriter = new LogWriter(Server.class);
 
     private SSLServerSocket createServerSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
@@ -38,12 +38,9 @@ public class Server implements Runnable {
         return serverSocket;
     }
 
-    //Run server and handle client requests
     public void runServer() {
         try {
-            //server start listening
             Tracker tracker = new Tracker();
-            //prepare table to track client request
             Formatter fmt = new Formatter();
             System.out.println(fmt.format("%15s %15s %15s\n", "Ip", "Host Name", "Service"));
             while (true) {
@@ -58,7 +55,6 @@ public class Server implements Runnable {
     }
 
     public void run() {
-        //creating server
         server = createServerSocket();
         runServer();
     }

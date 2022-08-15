@@ -3,17 +3,13 @@ package Tracker;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 
 import LogWritter.LogWriter;
 
 public class Tracker {
-    public static HashSet<String> clientList;
-    private final LogWriter logWriter = new LogWriter(Tracker.class);
-
-    public Tracker() {
-        clientList = new HashSet<>();
-    }
-
+    private static final LogWriter logWriter = new LogWriter(Tracker.class);
+    public static Set<String> clientList = clientList = new HashSet<>();;
     synchronized public void addToList(String ip) {
         clientList.add(ip);
     }

@@ -11,13 +11,13 @@ import LogWritter.LogWriter;
 public class Distributer {
 
     protected static final Map<String, String> serverChunkMap = new LinkedHashMap<>();
+    private static final LogWriter logWriter = new LogWriter(Distributer.class);
     public static String fileName;
     protected static HttpURLConnection connection = null;
     protected static String strUrl;
     protected static int noServer;
     private static URL url = null;
     private static long downloadSize;
-    private final LogWriter logWriter = new LogWriter(Distributer.class);
     private Thread t;
     private int retryCount = 0;
 

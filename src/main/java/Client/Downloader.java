@@ -12,13 +12,14 @@ import me.tongfei.progressbar.ProgressBar;
 
 public class Downloader implements Runnable {
 
+    private static final LogWriter logWriter = new LogWriter(Downloader.class);
+
     private final long start;
     private final long end;
     private final int index;
     private final boolean self;
     private final Thread t;
     private long actualSize;
-    private final LogWriter logWriter = new LogWriter(Downloader.class);
 
 
     public Downloader(long start, long end, int index, boolean self) {

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -20,8 +21,11 @@ import picocli.CommandLine.Command;
 @Command(name = "client", description = "start downloading file", mixinStandardHelpOptions = true)
 public class Client implements Runnable {
 
-    protected static final HashSet<String> tempIpList = new HashSet<>();
-    public static boolean isCompleted = false;
+    protected static final Set<String> tempIpList = new HashSet<>();
+    private static final LinkedList<String> freeServerList = new LinkedList<>();
+    private static final LinkedList<String> failedDownloadList = new LinkedList<>();
+    private static final LinkedList<String> successfulDownloadList = new LinkedList<>();
+    public static volatile boolean isCompleted = false;
     @Parameters(paramLabel = "url", description = "url of file to be downloaded")
     protected static String strUrl = null;
     @Option(names = {"-sp", "--serverport"})
@@ -31,13 +35,10 @@ public class Client implements Runnable {
     private static DataInputStream dis;
     private static DataOutputStream dos;
     private static String message;
-    private static final LinkedList<String> freeServerList = new LinkedList<>();
-    private static final LinkedList<String> failedDownloadList = new LinkedList<>();
-    private static final LinkedList<String> successfulDownloadList = new LinkedList<>();
     @Parameters(paramLabel = "tracker-ip", description = "ip address of tracker server")
-    private static String TRACKER_IP = null;
+    private static final String TRACKER_IP = null;
     @Option(names = {"-tp", "--trackerport"})
-    private static int TRACKER_PORT = 5000;
+    private static final int TRACKER_PORT = 5000;
     private final LogWriter logWriter = new LogWriter(Client.class);
 
     public static LinkedList<String> getFreeServerList() {
@@ -95,7 +96,7 @@ public class Client implements Runnable {
     private SSLSocket createSocket() {
         String[] CIPHERS = {"SSL_DH_anon_WITH_RC4_128_MD5"};
         SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        SSLSocket socket = null;
+        SSLSocket socket;
         try {
             socket = (SSLSocket) socketFactory.createSocket(TRACKER_IP, TRACKER_PORT);
             logWriter.writeLog("client socket create with address " + TRACKER_IP + ":" + TRACKER_IP, "info");
