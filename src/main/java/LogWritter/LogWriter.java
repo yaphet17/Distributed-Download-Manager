@@ -9,7 +9,7 @@ public class LogWriter {
     private final Logger logger;
 
     public LogWriter(Class c) {
-        logger = LogManager.getLogger(c.getDeclaringClass());
+        logger = LogManager.getLogger(c);
         Configurator.initialize(null, "log4j.xml");
     }
 
