@@ -1,9 +1,10 @@
 import Client.Client;
 import picocli.CommandLine;
+
 import static picocli.CommandLine.*;
 
 @Command(
-        name="DDM",
+        name = "DDM",
         description = "start distributed download manager",
         mixinStandardHelpOptions = true,
         subcommands = {
@@ -13,16 +14,14 @@ import static picocli.CommandLine.*;
         }
 )
 public class main implements Runnable {
-    @Override
-    public void run(){
-    }
-    public static void main(String[] args){
-        int exitCode=new CommandLine(main.class).execute(args);
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(main.class).execute(args);
         System.exit(exitCode);
     }
 
-
-
+    @Override
+    public void run() {
+    }
 
 
 }

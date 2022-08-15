@@ -7,13 +7,14 @@ import org.apache.logging.log4j.core.config.Configurator;
 public class LogWriter {
 
     private final Logger logger;
-    public LogWriter(Class c){
-        logger= LogManager.getLogger(c.getDeclaringClass());
-        Configurator.initialize(null,"log4j.xml");
+
+    public LogWriter(Class c) {
+        logger = LogManager.getLogger(c.getDeclaringClass());
+        Configurator.initialize(null, "log4j.xml");
     }
 
-    public void writeLog(String msg,String type){
-        switch(type){
+    public void writeLog(String msg, String type) {
+        switch (type) {
             case "info":
                 logger.info(msg);
                 break;
